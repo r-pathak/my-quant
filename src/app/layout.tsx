@@ -58,7 +58,7 @@ export default function RootLayout({
             <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-gradient-to-br from-pink-500/6 to-purple-500/8 rounded-full blur-2xl pointer-events-none"></div>
             <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-gradient-to-tl from-purple-500/7 to-pink-500/5 rounded-full blur-3xl pointer-events-none"></div>
             <div className="fixed left-6 top-8 z-50">
-              <IconBrain className="h-10 w-10 text-pink-500 mb-4" />
+              <IconBrain className="h-12 w-12 text-pink-500/90 ml-2 mb-4" />
             </div>
             <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50">
               <VerticalSidebar items={sidebarItems} />
