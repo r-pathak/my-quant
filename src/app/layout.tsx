@@ -63,7 +63,7 @@ export default function RootLayout({
             <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50">
               <VerticalSidebar items={sidebarItems} />
             </div>
-            <main className="flex-1 px-4 ml-24 flex items-center justify-center min-h-screen">
+            <main className="flex-1 px-4 py-8 ml-24 flex items-center justify-center min-h-screen">
               <div className="w-full">
                 <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6">
                   {children}
