@@ -57,15 +57,15 @@ export default function RootLayout({
             <div className="absolute bottom-20 right-20 w-48 h-48 bg-gradient-to-l from-purple-600/6 to-purple-500/8 rounded-full blur-2xl pointer-events-none"></div>
             <div className="absolute top-1/2 left-1/3 w-32 h-32 bg-gradient-to-br from-pink-500/6 to-purple-500/8 rounded-full blur-2xl pointer-events-none"></div>
             <div className="absolute bottom-1/3 right-1/3 w-40 h-40 bg-gradient-to-tl from-purple-500/7 to-pink-500/5 rounded-full blur-3xl pointer-events-none"></div>
-            <div className="flex flex-col items-center h-screen justify-center pl-6">
-              <div className="absolute z-10 top-8">
-                <IconBrain className="h-10 w-10 text-pink-500" />
-              </div>
+            <div className="fixed left-6 top-8 z-50">
+              <IconBrain className="h-10 w-10 text-pink-500 mb-4" />
+            </div>
+            <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50">
               <VerticalSidebar items={sidebarItems} />
             </div>
-            <main className="flex-1 px-4 pt-4">
-              <div className="w-full h-[calc(100vh-2rem)]">
-                <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6 h-full">
+            <main className="flex-1 px-4 ml-24 flex items-center justify-center min-h-screen">
+              <div className="w-full">
+                <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6">
                   {children}
                 </div>
               </div>

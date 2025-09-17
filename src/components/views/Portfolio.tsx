@@ -212,32 +212,32 @@ export default function Portfolio() {
       </div>
 
       {/* Portfolio Overview and Chart */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* Portfolio Overview Cards */}
-        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+        <div className="lg:col-span-2 grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-mono">Total Value</p>
-                <p className="text-2xl font-bold text-foreground font-mono">
+                <p className="text-xs text-muted-foreground font-mono">Total Value</p>
+                <p className="text-xl font-bold text-foreground font-mono">
                   ${portfolioSummary ? portfolioSummary.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                 </p>
               </div>
-              {/* <IconDollarSign className="h-8 w-8 text-primary" /> */}
+              {/* <IconDollarSign className="h-6 w-6 text-primary" /> */}
             </div>
-            <div className="flex items-center gap-1 mt-2">
+            <div className="flex items-center gap-1 mt-1">
               {todaysPnL >= 0 ? (
-                <IconTrendingUp className="h-4 w-4 text-green-400" />
+                <IconTrendingUp className="h-3 w-3 text-green-400" />
               ) : (
-                <IconTrendingDown className="h-4 w-4 text-red-400" />
+                <IconTrendingDown className="h-3 w-3 text-red-400" />
               )}
-              <span className={`text-sm font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`Today's Change: ${todaysPnL >= 0 ? '+' : ''}$${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+              <span className={`text-xs font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`Today's Change: ${todaysPnL >= 0 ? '+' : ''}$${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
                 {todaysPnL >= 0 ? '+' : ''}${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} today
               </span>
             </div>
           </div>
 
-          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-mono">Today&apos;s P&L</p>
@@ -259,7 +259,7 @@ export default function Portfolio() {
             </div>
           </div>
 
-          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-muted-foreground font-mono">Active Positions</p>
@@ -276,23 +276,23 @@ export default function Portfolio() {
             </div>
           </div>
 
-          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+          <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-mono">All-Time P&L</p>
-                <p className={`text-2xl font-bold font-mono ${allTimePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p className="text-xs text-muted-foreground font-mono">All-Time P&L</p>
+                <p className={`text-xl font-bold font-mono ${allTimePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {allTimePnL >= 0 ? '+' : ''}${Math.abs(allTimePnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               {allTimePnL >= 0 ? (
-                <IconTrendingUp className="h-8 w-8 text-green-400" />
+                <IconTrendingUp className="h-6 w-6 text-green-400" />
               ) : (
-                <IconTrendingDown className="h-8 w-8 text-red-400" />
+                <IconTrendingDown className="h-6 w-6 text-red-400" />
               )}
             </div>
-            <div className="flex items-center gap-1 mt-2">
-              <IconPercentage className={`h-4 w-4 ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-              <span className={`text-sm font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`All-Time Return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
+            <div className="flex items-center gap-1 mt-1">
+              <IconPercentage className={`h-3 w-3 ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+              <span className={`text-xs font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`All-Time Return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
                 {allTimePnLPercentage >= 0 ? '+' : ''}{allTimePnLPercentage.toFixed(1)}% all-time
               </span>
             </div>
@@ -306,17 +306,18 @@ export default function Portfolio() {
       </div>
 
       {/* Holdings and News Section */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4 flex-1 min-h-0">
         {/* Stock Holdings */}
-        <div className="lg:col-span-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col min-h-0" >
-          <div className="p-6 border-b border-white/10 flex-shrink-0">
+        <div className="lg:col-span-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col" style={{ maxHeight: '500px' }}>
+          <div className="p-4 border-b border-white/10 flex-shrink-0">
             <h2 className="text-xl font-semibold text-foreground font-mono">
               Holdings ({sortedHoldings.length})
             </h2>
           </div>
           {sortedHoldings.length > 0 ? (
-            <div className="flex-1 overflow-y-auto min-h-0">
+            <div className="flex-1 overflow-y-auto">
               <div className="divide-y divide-white/10">
+                
                 {sortedHoldings.map((holding) => {
                   const currentPrice = holding.currentPrice || holding.boughtPrice;
                   const totalValue = holding.unitsHeld * currentPrice;
