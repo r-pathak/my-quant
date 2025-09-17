@@ -1,6 +1,6 @@
 "use client";
 
-import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip } from 'recharts';
 import { useMemo } from 'react';
 
 interface Holding {
@@ -54,7 +54,7 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
 
   const totalValue = chartData.reduce((sum, item) => sum + item.value, 0);
 
-  const CustomTooltip = ({ active, payload }: any) => {
+  const CustomTooltip = ({ active, payload }: { active?: boolean; payload?: Array<{ payload: { name: string; fullName: string; value: number; color: string; sector: string } }> }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       const percentage = ((data.value / totalValue) * 100).toFixed(1);

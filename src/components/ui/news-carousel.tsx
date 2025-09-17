@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { IconExternalLink, IconRefresh, IconNews } from "@tabler/icons-react";
@@ -31,24 +31,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
   const [hasLoadedNews, setHasLoadedNews] = useState(false);
   const fetchNews = useAction(api.newsActions.fetchTopHoldingsNews);
 
-  // Load news only once when holdings are first available
-  useEffect(() => {
-    if (holdings.length > 0 && !hasLoadedNews) {
-      loadNews();
-    }
-  }, [holdings, hasLoadedNews]);
-
-  // Auto-advance carousel every 10 seconds
-  useEffect(() => {
-    if (news.length > 1) {
-      const interval = setInterval(() => {
-        setCurrentIndex((prev) => (prev + 1) % news.length);
-      }, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [news.length]);
-
-  const loadNews = async () => {
+  const loadNews = useCallback(async () => {
     setIsLoading(true);
     try {
       // Sort holdings by total value and take top 5 on client-side
@@ -68,7 +51,24 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [holdings, fetchNews]);
+
+  // Load news only once when holdings are first available
+  useEffect(() => {
+    if (holdings.length > 0 && !hasLoadedNews) {
+      loadNews();
+    }
+  }, [holdings, hasLoadedNews, loadNews]);
+
+  // Auto-advance carousel every 10 seconds
+  useEffect(() => {
+    if (news.length > 1) {
+      const interval = setInterval(() => {
+        setCurrentIndex((prev) => (prev + 1) % news.length);
+      }, 10000);
+      return () => clearInterval(interval);
+    }
+  }, [news.length]);
 
   const handleRefresh = () => {
     loadNews();

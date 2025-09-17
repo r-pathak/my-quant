@@ -3,7 +3,7 @@
 import { IconTrendingUp, IconTrendingDown, IconPercentage, IconRefresh, IconPlus, IconPhoneSpark } from "@tabler/icons-react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback } from "react";
 import HoldingsPieChart from "../ui/holdings-pie-chart";
 import AddHoldingForm from "../ui/add-holding-form";
 import NewsCarousel from "../ui/news-carousel";
@@ -17,9 +17,23 @@ export default function Portfolio() {
 
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
-  const [autoRefreshEnabled, setAutoRefreshEnabled] = useState(true);
+  const [autoRefreshEnabled] = useState(true);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [dailyChanges, setDailyChanges] = useState<{ [key: string]: { change: number; changePercent: number } }>({});
+
+  const fetchDailyChanges = useCallback(async () => {
+    if (holdings && holdings.length > 0) {
+      try {
+        const tickers = [...new Set(holdings.map(h => h.ticker))];
+        console.log('Fetching daily changes for tickers:', tickers);
+        const changes = await getDailyPriceChanges({ tickers });
+        console.log('Daily changes received:', changes);
+        setDailyChanges(changes);
+      } catch (error) {
+        console.error('Error fetching daily changes:', error);
+      }
+    }
+  }, [holdings, getDailyPriceChanges]);
 
   // Auto-update prices every 5 minutes (less frequent to avoid constant changes)
   useEffect(() => {
@@ -54,7 +68,7 @@ export default function Portfolio() {
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [holdings, updateAllPrices, lastUpdated, isUpdatingPrices, autoRefreshEnabled]);
+  }, [holdings, updateAllPrices, lastUpdated, isUpdatingPrices, autoRefreshEnabled, fetchDailyChanges]);
 
   // Fetch daily changes when holdings are loaded
   useEffect(() => {
@@ -62,7 +76,7 @@ export default function Portfolio() {
       console.log('Holdings loaded:', holdings);
       fetchDailyChanges();
     }
-  }, [holdings]);
+  }, [holdings, fetchDailyChanges]);
 
   // Calculate today's P&L based on daily price changes
   const calculateTodaysPnL = () => {
@@ -106,29 +120,6 @@ export default function Portfolio() {
     };
   }).sort((a, b) => b.totalValue - a.totalValue) : [];
 
-  // Calculate individual holding P&L
-  const calculateHoldingPnL = (holding: any) => {
-    const currentPrice = holding.currentPrice || holding.boughtPrice;
-    const totalValue = holding.totalValue;
-    const costBasis = holding.unitsHeld * holding.boughtPrice;
-    const pnl = totalValue - costBasis;
-    const pnlPercentage = (pnl / costBasis) * 100;
-    return { pnl, pnlPercentage, totalValue };
-  };
-
-  const fetchDailyChanges = async () => {
-    if (holdings && holdings.length > 0) {
-      try {
-        const tickers = [...new Set(holdings.map(h => h.ticker))];
-        console.log('Fetching daily changes for tickers:', tickers);
-        const changes = await getDailyPriceChanges({ tickers });
-        console.log('Daily changes received:', changes);
-        setDailyChanges(changes);
-      } catch (error) {
-        console.error('Error fetching daily changes:', error);
-      }
-    }
-  };
 
   const handleRefreshPrices = async () => {
     setIsUpdatingPrices(true);
@@ -249,7 +240,7 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-mono">Today's P&L</p>
+                <p className="text-sm text-muted-foreground font-mono">Today&apos;s P&L</p>
                 <p className={`text-2xl font-bold font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {todaysPnL >= 0 ? '+' : ''}${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
