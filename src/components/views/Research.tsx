@@ -11,11 +11,9 @@ import {
   IconMinus,
   IconChartLine,
   IconBuilding,
-  IconSparkles,
   IconCurrencyDollar,
   IconPercentage,
   IconCalendarStats,
-  IconSettings,
   IconTrash,
   IconRefresh,
   IconExternalLink

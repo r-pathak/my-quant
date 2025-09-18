@@ -6,7 +6,6 @@ import { VerticalSidebar } from "@/components/ui/vertical-sidebar";
 import AuthWrapper from "@/components/auth/AuthWrapper";
 import UserMenu from "@/components/auth/UserMenu";
 import {
-  IconBrain,
   IconChartBar,
   IconMicroscope,
   IconSettings,
