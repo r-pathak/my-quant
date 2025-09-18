@@ -21,6 +21,7 @@ import {
   IconRefresh,
   IconExternalLink
 } from "@tabler/icons-react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
 interface StockData {
   ticker: string;
@@ -50,15 +51,34 @@ export function Research() {
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [showManageStocks, setShowManageStocks] = useState(false);
+  const [showAddStockModal, setShowAddStockModal] = useState(false);
+  const [activeTab, setActiveTab] = useState<'fundamentals' | 'technicals'>('fundamentals');
   const [motleyFoolData, setMotleyFoolData] = useState<any>(null);
   const [isLoadingMotleyFool, setIsLoadingMotleyFool] = useState(false);
   const [hasLoadedMotleyFool, setHasLoadedMotleyFool] = useState<string | null>(null);
+  
+  // Technical analysis states
+  const [chartData, setChartData] = useState<any>(null);
+  const [isLoadingChart, setIsLoadingChart] = useState(false);
+  const [timeframe, setTimeframe] = useState<'1h' | '1d' | '1wk' | '1mo'>('1d');
+  const [indicators, setIndicators] = useState<{
+    rsi: boolean;
+    bollinger: boolean;
+    sma20: boolean;
+    sma50: boolean;
+  }>({
+    rsi: false,
+    bollinger: false,
+    sma20: true,
+    sma50: true,
+  });
 
   const researchStocks = useQuery(api.researchActions.getAllResearchStocks);
   const fetchAndAddStock = useAction(api.researchActions.fetchAndAddStock);
   const removeStock = useMutation(api.researchActions.removeResearchStock);
   const getStockData = useAction(api.researchActions.getStockResearchData);
   const getMotleyFoolData = useAction(api.firecrawlActions.getMotleyFoolData);
+  const getChartData = useAction(api.chartActions.getChartData);
 
   // Auto-select the most recent stock when research stocks are loaded
   useEffect(() => {
@@ -124,6 +144,29 @@ export function Research() {
     }
   }, [selectedTicker, getStockData, getMotleyFoolData]);
 
+  // Load chart data when switching to technicals tab or changing timeframe
+  useEffect(() => {
+    if (selectedTicker && activeTab === 'technicals') {
+      setIsLoadingChart(true);
+      getChartData({ ticker: selectedTicker, timeframe })
+        .then((result) => {
+          if (result.success) {
+            setChartData(result.data);
+          } else {
+            console.error("Failed to fetch chart data:", 'error' in result ? result.error : 'Unknown error');
+            setChartData(null);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching chart data:", error);
+          setChartData(null);
+        })
+        .finally(() => {
+          setIsLoadingChart(false);
+        });
+    }
+  }, [selectedTicker, activeTab, timeframe, getChartData]);
+
   const handleAddStock = async () => {
     if (!newTicker.trim()) return;
     
@@ -132,6 +175,7 @@ export function Research() {
       const result = await fetchAndAddStock({ ticker: newTicker.trim().toUpperCase() });
       if (result.success) {
         setNewTicker("");
+        setShowAddStockModal(false);
         // Auto-select the newly added stock
         setSelectedTicker(newTicker.trim().toUpperCase());
       } else {
@@ -198,6 +242,74 @@ export function Research() {
     }).format(value);
   };
 
+  // Custom tooltip for the chart
+  const CustomTooltip = ({ active, payload, label }: any) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="bg-card/90 backdrop-blur-xl border border-white/20 rounded-lg p-3 shadow-xl">
+          <p className="text-xs text-muted-foreground font-mono mb-2">
+            {new Date(data.timestamp).toLocaleDateString()} {new Date(data.timestamp).toLocaleTimeString()}
+          </p>
+          <div className="space-y-1 text-xs font-mono">
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Open:</span>
+              <span className="text-foreground">{formatCurrency(data.open)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">High:</span>
+              <span className="text-green-400">{formatCurrency(data.high)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Low:</span>
+              <span className="text-red-400">{formatCurrency(data.low)}</span>
+            </div>
+            <div className="flex justify-between gap-4">
+              <span className="text-muted-foreground">Close:</span>
+              <span className="text-foreground font-bold">{formatCurrency(data.close)}</span>
+            </div>
+            {data.volume && (
+              <div className="flex justify-between gap-4 pt-1 border-t border-white/10">
+                <span className="text-muted-foreground">Volume:</span>
+                <span className="text-blue-400">{(data.volume / 1000000).toFixed(1)}M</span>
+              </div>
+            )}
+            {/* Technical Indicators */}
+            {(data.sma20 || data.sma50 || data.rsi || data.bollingerMiddle) && (
+              <div className="pt-2 border-t border-white/10 space-y-1">
+                {data.sma20 && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-green-400 text-xs">SMA20:</span>
+                    <span className="text-green-400 text-xs">{formatCurrency(data.sma20)}</span>
+                  </div>
+                )}
+                {data.sma50 && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-yellow-400 text-xs">SMA50:</span>
+                    <span className="text-yellow-400 text-xs">{formatCurrency(data.sma50)}</span>
+                  </div>
+                )}
+                {data.rsi && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-blue-400 text-xs">RSI:</span>
+                    <span className="text-blue-400 text-xs">{data.rsi.toFixed(1)}</span>
+                  </div>
+                )}
+                {data.bollingerMiddle && (
+                  <div className="flex justify-between gap-4">
+                    <span className="text-purple-400 text-xs">BB Mid:</span>
+                    <span className="text-purple-400 text-xs">{formatCurrency(data.bollingerMiddle)}</span>
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   const formatLargeNumber = (value: number) => {
     if (value >= 1e12) {
       return `$${(value / 1e12).toFixed(1)}T`;
@@ -228,61 +340,37 @@ export function Research() {
   };
 
   return (
-    <div className="flex flex-col h-full space-y-4 relative font-mono">
-      {/* Header with Add Stock Interface */}
-      <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl p-3">
-        <div className="flex items-center justify-between mb-2">
-          <div>
-            <h1 className="text-lg font-bold text-foreground font-mono">Research</h1>
-          </div>
-          
-          <button
-            onClick={() => setShowManageStocks(!showManageStocks)}
-            className={`flex items-center gap-2 px-3 py-2 rounded-lg transition-colors text-sm font-mono ${
-              showManageStocks 
-                ? 'bg-primary/20 text-primary border border-primary/30' 
-                : 'bg-card/40 hover:bg-card/60 border border-white/20'
-            }`}
-          >
-            <IconSettings className="h-4 w-4" />
-            {showManageStocks ? 'Exit Manage' : 'Manage Stocks'}
-          </button>
-        </div>
-        
-        {/* Add Stock Form */}
-        <div className="flex gap-2">
-          <input
-            type="text"
-            value={newTicker}
-            onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
-            placeholder="Add ticker (AAPL, GOOGL, TSLA)"
-            className="flex-1 px-2 py-1.5 text-sm bg-card/40 backdrop-blur-xl border border-white/20 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent font-mono"
-            onKeyPress={(e) => e.key === 'Enter' && handleAddStock()}
-            disabled={isAddingStock}
-          />
-          <button
-            onClick={handleAddStock}
-            disabled={isAddingStock || !newTicker.trim()}
-            className="flex items-center gap-1 px-3 py-1.5 text-sm bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-          >
-            {isAddingStock ? (
-              <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full"></div>
-            ) : (
-              <IconPlus className="h-3 w-3" />
-            )}
-            <span className="text-xs font-mono">Add</span>
-          </button>
-        </div>
-      </div>
-
+    <div className="flex flex-col h-full relative font-mono">
       {/* Main Content */}
-      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 min-h-0">
+      <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 min-h-0 p-4">
         {/* Left Sidebar - Ticker List */}
         <div className="lg:col-span-1 bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl flex flex-col">
           <div className="p-2 border-b border-white/10 flex-shrink-0">
-            <h2 className="text-sm font-semibold text-foreground font-mono">
-              Watchlist ({researchStocks?.length || 0})
-            </h2>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-foreground font-mono">
+                Watchlist ({researchStocks?.length || 0})
+              </h2>
+              <div className="flex items-center gap-1">
+                <button
+                  onClick={() => setShowAddStockModal(true)}
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors font-mono"
+                >
+                  <IconPlus className="h-3 w-3" />
+                  Add
+                </button>
+                <button
+                  onClick={() => setShowManageStocks(!showManageStocks)}
+                  className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs font-mono ${
+                    showManageStocks 
+                      ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                      : 'bg-card/40 hover:bg-card/60 border border-white/20'
+                  }`}
+                >
+                  <IconSettings className="h-3 w-3" />
+                  {showManageStocks ? 'Done' : 'Edit'}
+                </button>
+              </div>
+            </div>
           </div>
           
           <div className="flex-1 overflow-y-auto">
@@ -296,21 +384,36 @@ export function Research() {
                 {researchStocks?.map((stock) => (
                   <div
                     key={stock._id}
-                    className={`p-2 cursor-pointer transition-all duration-200 hover:bg-white/5 group ${
-                      selectedTicker === stock.ticker ? 'bg-primary/10 border-l-2 border-l-primary' : ''
+                    className={`p-2 cursor-pointer transition-all duration-300 group relative overflow-hidden ${
+                      selectedTicker === stock.ticker 
+                        ? 'bg-gradient-to-r from-blue-500/20 via-purple-500/15 to-cyan-500/20 border border-blue-400/40 rounded-lg shadow-lg shadow-blue-500/20 z-10' 
+                        : 'hover:bg-white/5'
                     }`}
                     onClick={() => setSelectedTicker(stock.ticker)}
                   >
-                    <div className="flex items-center justify-between">
+                    {selectedTicker === stock.ticker && (
+                      <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/5 to-cyan-500/10 animate-pulse" />
+                    )}
+                    <div className="flex items-center justify-between relative z-10">
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2">
-                          <div className="w-6 h-6 bg-primary/20 rounded-lg flex items-center justify-center border border-primary/30">
-                            <span className="text-primary font-bold text-xs font-mono">{stock.ticker.slice(0, 2)}</span>
+                          <div className={`w-6 h-6 rounded-lg flex items-center justify-center border transition-all duration-300 ${
+                            selectedTicker === stock.ticker 
+                              ? 'bg-gradient-to-br from-blue-500/30 to-purple-500/30 border-blue-400/50 shadow-lg' 
+                              : 'bg-primary/20 border-primary/30'
+                          }`}>
+                            <span className={`font-bold text-xs font-mono ${
+                              selectedTicker === stock.ticker ? 'text-white' : 'text-primary'
+                            }`}>{stock.ticker.slice(0, 2)}</span>
                           </div>
                           <div className="flex-1 min-w-0">
-                            <h3 className="text-xs font-mono text-foreground truncate font-semibold">{stock.ticker}</h3>
+                            <h3 className={`text-xs font-mono truncate font-semibold transition-colors duration-300 ${
+                              selectedTicker === stock.ticker ? 'text-white' : 'text-foreground'
+                            }`}>{stock.ticker}</h3>
                             {stock.currentPrice && (
-                              <p className="text-xs text-primary font-mono">
+                              <p className={`text-xs font-mono transition-colors duration-300 ${
+                                selectedTicker === stock.ticker ? 'text-blue-200' : 'text-primary'
+                              }`}>
                                 ${stock.currentPrice.toFixed(0)}
                               </p>
                             )}
@@ -368,7 +471,7 @@ export function Research() {
                     <h1 className="text-xl font-bold text-foreground font-mono mb-2">
                       {stockData.ticker} - {stockData.companyName}
                     </h1>
-                    <div className="flex items-center gap-2 mt-1">
+                    <div className="flex items-center gap-2 mt-1 mb-3">
                       <div className="text-lg font-bold text-foreground font-mono">
                         {formatCurrency(stockData.currentPrice)}
                       </div>
@@ -376,6 +479,40 @@ export function Research() {
                       <span className={`text-sm font-mono ${stockData.change >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                         ({stockData.change >= 0 ? '+' : ''}{formatCurrency(stockData.change)})
                       </span>
+                    </div>
+                    
+                    {/* Tab Navigation - Below Price */}
+                    <div className="flex gap-1">
+                      <button
+                        onClick={() => setActiveTab('fundamentals')}
+                        className={`px-4 py-1.5 text-xs font-mono rounded-lg transition-all duration-300 relative overflow-hidden ${
+                          activeTab === 'fundamentals'
+                            ? 'bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 text-white shadow-lg shadow-blue-500/20 transform scale-105 z-10'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
+                        }`}
+                      >
+                        {activeTab === 'fundamentals' && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1">
+                        Fundamentals
+                        </span>
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('technicals')}
+                        className={`px-4 py-1.5 text-xs font-mono rounded-lg transition-all duration-300 relative overflow-hidden ${
+                          activeTab === 'technicals'
+                            ? 'bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 text-white shadow-lg shadow-blue-500/20 transform scale-105 z-10'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
+                        }`}
+                      >
+                        {activeTab === 'technicals' && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1">
+                          Technicals
+                        </span>
+                      </button>
                     </div>
                   </div>
                   
@@ -417,8 +554,12 @@ export function Research() {
                 </div>
               </div>
 
+
               <div className="p-4 space-y-4">
-                {/* Performance Cards */}
+                {/* Fundamentals Tab Content */}
+                {activeTab === 'fundamentals' && (
+                  <>
+                    {/* Performance Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                   {stockData.performance?.ytd !== null && stockData.performance?.ytd !== undefined && (
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
@@ -553,12 +694,57 @@ export function Research() {
                       )}
                     </div>
                     {motleyFoolData.stockData.description && motleyFoolData.stockData.description !== "N/A" && (
-                      <div className="mt-4 pt-4 border-t border-white/10">
-                        <div className="text-muted-foreground font-mono mb-2 text-sm">Company Description</div>
-                        <div className="text-foreground font-mono font-semiboldtext-sm leading-relaxed">
-                          {motleyFoolData.stockData.description}
+                        <div className="mt-4 pt-4 border-t border-white/10">
+                          <div className="text-muted-foreground font-mono mb-2 text-sm">Company Description</div>
+                          <div className="group cursor-pointer">
+                            <div 
+                              ref={(el) => {
+                                if (el) {
+                                  // Check if text is actually truncated
+                                  const isTruncated = el.scrollHeight > el.clientHeight;
+                                  const hintElement = el.nextElementSibling as HTMLElement;
+                                  if (hintElement) {
+                                    hintElement.style.display = isTruncated ? 'block' : 'none';
+                                  }
+                                }
+                              }}
+                              className="text-foreground font-mono font-semibold text-sm leading-relaxed transition-all duration-300 ease-in-out"
+                              style={{
+                                display: '-webkit-box',
+                                WebkitLineClamp: 2,
+                                WebkitBoxOrient: 'vertical',
+                                overflow: 'hidden',
+                              }}
+                              onMouseEnter={(e) => {
+                                const element = e.currentTarget;
+                                const parentContainer = element.closest('.bg-card\\/40') as HTMLElement;
+                                if (parentContainer) {
+                                  parentContainer.style.zIndex = '50';
+                                  parentContainer.style.position = 'relative';
+                                }
+                                element.style.display = 'block';
+                                element.style.webkitLineClamp = 'unset';
+                                element.style.overflow = 'visible';
+                              }}
+                              onMouseLeave={(e) => {
+                                const element = e.currentTarget;
+                                const parentContainer = element.closest('.bg-card\\/40') as HTMLElement;
+                                if (parentContainer) {
+                                  parentContainer.style.zIndex = '';
+                                  parentContainer.style.position = '';
+                                }
+                                element.style.display = '-webkit-box';
+                                element.style.webkitLineClamp = '2';
+                                element.style.overflow = 'hidden';
+                              }}
+                            >
+                              {motleyFoolData.stockData.description}
+                            </div>
+                            <div className="text-xs text-muted-foreground font-mono mt-1 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
+                              Hover to read more...
+                            </div>
+                          </div>
                         </div>
-                      </div>
                     )}
                   </div>
                     ) : motleyFoolData && !motleyFoolData.success ? (
@@ -632,7 +818,7 @@ export function Research() {
                   </div>
                 )}
 
-                {/* Key Metrics */}
+                    {/* Key Metrics */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                   {stockData.marketCap && (
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
@@ -682,9 +868,304 @@ export function Research() {
                     </div>
                   )}
                 </div>
+                  </>
+                )}
 
+                {/* Technicals Tab Content */}
+                {activeTab === 'technicals' && (
+                  <>
+                    {/* Chart Controls */}
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl p-3 shadow-2xl">
+                      <div className="flex items-center justify-between mb-3">
+                        <h3 className="text-base font-bold text-foreground font-mono">Chart Controls</h3>
+                      </div>
+                      
+                      <div>
+                        <div className="flex flex-row items-center gap-6">
+                          {/* Timeframe Selection */}
+                          <div className="flex items-center gap-3">
+                            <label className="text-xs font-medium text-muted-foreground font-mono whitespace-nowrap">
+                              Timeframe:
+                            </label>
+                            <div className="flex gap-2">
+                              {(['1h', '1d', '1wk', '1mo'] as const).map((tf) => (
+                                <button
+                                  key={tf}
+                                  onClick={() => setTimeframe(tf)}
+                                  className={`px-2 py-1 text-xs font-mono rounded-md transition-colors ${
+                                    timeframe === tf
+                                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                      : 'bg-card/40 hover:bg-card/60 border border-white/20 text-muted-foreground hover:text-foreground'
+                                  }`}
+                                >
+                                  {tf.toUpperCase()}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
 
+                          {/* Indicators */}
+                          <div className="flex items-center gap-3">
+                            <label className="text-xs font-medium text-muted-foreground font-mono whitespace-nowrap">
+                              Indicators:
+                            </label>
+                            <div className="flex gap-2 flex-wrap">
+                              {Object.entries(indicators).map(([key, value]) => (
+                                <button
+                                  key={key}
+                                  onClick={() => setIndicators(prev => ({ ...prev, [key]: !prev[key as keyof typeof prev] }))}
+                                  className={`px-2 py-1 text-xs font-mono rounded-md transition-colors ${
+                                    value
+                                      ? 'bg-green-500/20 text-green-400 border border-green-500/30'
+                                      : 'bg-card/40 hover:bg-card/60 border border-white/20 text-muted-foreground hover:text-foreground'
+                                  }`}
+                                >
+                                  {key.toUpperCase()}
+                                </button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
 
+                    {/* Price Chart */}
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl">
+                      <div className="p-4 border-b border-white/10">
+                        <h3 className="text-lg font-bold text-foreground font-mono">Price Chart</h3>
+                        <p className="text-sm text-muted-foreground font-mono">
+                          {stockData.ticker} • {timeframe.toUpperCase()} • {Object.entries(indicators).filter(([_, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'No indicators'}
+                        </p>
+                      </div>
+                      
+                      <div className="p-4">
+                        {isLoadingChart ? (
+                          <div className="h-96 flex items-center justify-center">
+                            <div className="text-center">
+                              <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                              <p className="text-sm text-muted-foreground font-mono">Loading chart data...</p>
+                            </div>
+                          </div>
+                        ) : chartData ? (
+                          <div className="h-[600px] bg-gradient-to-br from-blue-500/5 to-purple-500/5 rounded-lg border border-white/10 p-4">
+                            <div className="h-full flex flex-col">
+                              <div className="flex items-center justify-between mb-4">
+                                <div className="text-sm font-mono text-muted-foreground">
+                                  {chartData.dataPoints || chartData.chartData?.length || 0} data points • {chartData.meta?.currency || 'USD'} • {chartData.period}
+                                </div>
+                                <div className="text-sm font-mono text-foreground">
+                                  Latest: {chartData.meta?.regularMarketPrice ? formatCurrency(chartData.meta.regularMarketPrice) : '--'}
+                                </div>
+                              </div>
+                              
+                              <div className="flex-1 flex flex-col">
+                                {/* Main Price Chart */}
+                                <div className={`${indicators.rsi ? 'h-3/4' : 'h-full'}`}>
+                                  <ResponsiveContainer width="100%" height="100%">
+                                    <LineChart data={chartData.chartData} margin={{ top: 5, right: 30, left: 20, bottom: indicators.rsi ? 5 : 20 }}>
+                                      <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                      {!indicators.rsi && (
+                                        <XAxis 
+                                          dataKey="timestamp"
+                                          tickFormatter={(value) => {
+                                            const date = new Date(value);
+                                            if (timeframe === '1h') {
+                                              return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            } else if (timeframe === '1d') {
+                                              // For daily charts, show month/year for better readability
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            } else if (timeframe === '1wk') {
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            } else {
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            }
+                                          }}
+                                          interval="preserveStartEnd"
+                                          stroke="rgba(255,255,255,0.6)"
+                                          fontSize={10}
+                                          fontFamily="monospace"
+                                        />
+                                      )}
+                                      <YAxis 
+                                        domain={['dataMin - 5', 'dataMax + 5']}
+                                        tickFormatter={(value) => `$${value.toFixed(0)}`}
+                                        stroke="rgba(255,255,255,0.6)"
+                                        fontSize={10}
+                                        fontFamily="monospace"
+                                      />
+                                      <Tooltip content={<CustomTooltip />} />
+                                      
+                                      {/* Main price line */}
+                                      <Line 
+                                        type="monotone" 
+                                        dataKey="close" 
+                                        stroke="#3b82f6" 
+                                        strokeWidth={2}
+                                        dot={false}
+                                        activeDot={{ r: 4, fill: '#3b82f6' }}
+                                      />
+                                      
+                                      {/* SMA 20 */}
+                                      {indicators.sma20 && (
+                                        <Line 
+                                          type="monotone" 
+                                          dataKey="sma20" 
+                                          stroke="#10b981" 
+                                          strokeWidth={1.5}
+                                          strokeDasharray="5 5"
+                                          dot={false}
+                                          connectNulls={false}
+                                        />
+                                      )}
+                                      
+                                      {/* SMA 50 */}
+                                      {indicators.sma50 && (
+                                        <Line 
+                                          type="monotone" 
+                                          dataKey="sma50" 
+                                          stroke="#f59e0b" 
+                                          strokeWidth={1.5}
+                                          strokeDasharray="5 5"
+                                          dot={false}
+                                          connectNulls={false}
+                                        />
+                                      )}
+                                      
+                                      {/* Bollinger Bands */}
+                                      {indicators.bollinger && (
+                                        <>
+                                          <Line 
+                                            type="monotone" 
+                                            dataKey="bollingerUpper" 
+                                            stroke="rgba(255,255,255,0.6)" 
+                                            strokeWidth={1}
+                                            strokeDasharray="2 2"
+                                            dot={false}
+                                            connectNulls={false}
+                                          />
+                                          <Line 
+                                            type="monotone" 
+                                            dataKey="bollingerMiddle" 
+                                            stroke="rgba(255,255,255,0.6)" 
+                                            strokeWidth={1}
+                                            strokeDasharray="2 2"
+                                            dot={false}
+                                            connectNulls={false}
+                                          />
+                                          <Line 
+                                            type="monotone" 
+                                            dataKey="bollingerLower" 
+                                            stroke="rgba(255,255,255,0.6)" 
+                                            strokeWidth={1}
+                                            strokeDasharray="2 2"
+                                            dot={false}
+                                            connectNulls={false}
+                                          />
+                                        </>
+                                      )}
+                                    </LineChart>
+                                  </ResponsiveContainer>
+                                </div>
+
+                                {/* RSI Chart */}
+                                {indicators.rsi && (
+                                  <div className="h-1/4 mt-2">
+                                    <div className="text-xs text-muted-foreground font-mono mb-1 px-2">RSI (21)</div>
+                                    <ResponsiveContainer width="100%" height="100%">
+                                      <LineChart data={chartData.chartData} margin={{ top: 5, right: 30, left: 20, bottom: 20 }}>
+                                        <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                                        <XAxis 
+                                          dataKey="timestamp"
+                                          tickFormatter={(value) => {
+                                            const date = new Date(value);
+                                            if (timeframe === '1h') {
+                                              return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                            } else if (timeframe === '1d') {
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            } else if (timeframe === '1wk') {
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            } else {
+                                              return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
+                                            }
+                                          }}
+                                          interval="preserveStartEnd"
+                                          stroke="rgba(255,255,255,0.6)"
+                                          fontSize={10}
+                                          fontFamily="monospace"
+                                        />
+                        <YAxis 
+                          domain={['dataMin - 5', 'dataMax + 5']}
+                          tickFormatter={(value) => value.toFixed(0)}
+                          stroke="rgba(255,255,255,0.6)"
+                          fontSize={10}
+                          fontFamily="monospace"
+                        />
+                                        <Tooltip 
+                                          content={({ active, payload, label }) => {
+                                            if (active && payload && payload.length) {
+                                              const data = payload[0].payload;
+                                              return (
+                                                <div className="bg-card/90 backdrop-blur-xl border border-white/20 rounded-lg p-2 shadow-xl">
+                                                  <p className="text-xs text-muted-foreground font-mono mb-1">
+                                                    {new Date(data.timestamp).toLocaleDateString()} {new Date(data.timestamp).toLocaleTimeString()}
+                                                  </p>
+                                                  <div className="text-xs font-mono">
+                                                    <span className="text-white">RSI: {data.rsi?.toFixed(1) || '--'}</span>
+                                                  </div>
+                                                </div>
+                                              );
+                                            }
+                                            return null;
+                                          }}
+                                        />
+                                        
+                                        {/* RSI Line */}
+                                        <Line 
+                                          type="monotone" 
+                                          dataKey="rsi" 
+                                          stroke="rgba(255,255,255,0.8)" 
+                                          strokeWidth={1.5}
+                                          dot={false}
+                                          connectNulls={false}
+                                        />
+                                        
+                                        {/* RSI Reference Lines */}
+                                        <ReferenceLine y={70} stroke="rgba(239,68,68,0.6)" strokeDasharray="2 2" strokeWidth={1} />
+                                        <ReferenceLine y={30} stroke="rgba(34,197,94,0.6)" strokeDasharray="2 2" strokeWidth={1} />
+                                        <ReferenceLine y={50} stroke="rgba(255,255,255,0.3)" strokeDasharray="1 1" strokeWidth={1} />
+                                      </LineChart>
+                                    </ResponsiveContainer>
+                                  </div>
+                                )}
+                              </div>
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="h-96 flex items-center justify-center">
+                            <div className="text-center text-muted-foreground">
+                              <IconChartLine className="h-16 w-16 mx-auto mb-4 opacity-50" />
+                              <p className="font-mono">No chart data available</p>
+                              <button
+                                onClick={() => {
+                                  setIsLoadingChart(true);
+                                  // TODO: Implement chart data loading
+                                  setTimeout(() => {
+                                    setChartData({ placeholder: true });
+                                    setIsLoadingChart(false);
+                                  }, 2000);
+                                }}
+                                className="mt-4 px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors font-mono text-sm"
+                              >
+                                Load Chart Data
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                  </>
+                )}
 
               </div>
             </div>
@@ -699,6 +1180,74 @@ export function Research() {
           )}
         </div>
       </div>
+
+      {/* Add Stock Modal */}
+      {showAddStockModal && (
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
+          <div className="bg-purple-900/30 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
+            <div className="flex items-center justify-between mb-4">
+              <h3 className="text-lg font-bold text-foreground font-mono">Add Stock to Watchlist</h3>
+              <button
+                onClick={() => {
+                  setShowAddStockModal(false);
+                  setNewTicker("");
+                }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <IconMinus className="h-5 w-5" />
+              </button>
+            </div>
+            
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-muted-foreground font-mono mb-2">
+                  Stock Ticker
+                </label>
+                <input
+                  type="text"
+                  value={newTicker}
+                  onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
+                  placeholder="Enter ticker (e.g., AAPL, GOOGL, TSLA)"
+                  className="w-full px-3 py-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent font-mono"
+                  onKeyPress={(e) => e.key === 'Enter' && handleAddStock()}
+                  disabled={isAddingStock}
+                  autoFocus
+                />
+              </div>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowAddStockModal(false);
+                    setNewTicker("");
+                  }}
+                  className="flex-1 px-4 py-2 text-sm bg-card/40 hover:bg-card/60 border border-white/20 rounded-lg transition-colors font-mono"
+                  disabled={isAddingStock}
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleAddStock}
+                  disabled={isAddingStock || !newTicker.trim()}
+                  className="flex-1 flex items-center justify-center gap-2 px-4 py-2 text-sm bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed font-mono"
+                >
+                  {isAddingStock ? (
+                    <>
+                      <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
+                      Adding...
+                    </>
+                  ) : (
+                    <>
+                      <IconPlus className="h-4 w-4" />
+                      Add Stock
+                    </>
+                  )}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

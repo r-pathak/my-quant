@@ -121,7 +121,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
 
   return (
     <div className="fixed inset-0 bg-black/92 rounded-3xl border-black z-50 flex items-center justify-center p-4">
-      <div className=" bg-neutral-900/90 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md">
+      <div className=" bg-purple-900/30 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-xl font-semibold text-foreground font-mono">Add New Holding</h2>

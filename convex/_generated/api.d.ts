@@ -13,6 +13,7 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as chartActions from "../chartActions.js";
 import type * as firecrawlActions from "../firecrawlActions.js";
 import type * as holdings from "../holdings.js";
 import type * as newsActions from "../newsActions.js";
@@ -31,6 +32,7 @@ import type * as tasks from "../tasks.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  chartActions: typeof chartActions;
   firecrawlActions: typeof firecrawlActions;
   holdings: typeof holdings;
   newsActions: typeof newsActions;
