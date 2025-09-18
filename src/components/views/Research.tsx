@@ -40,6 +40,8 @@ interface StockData {
     ytd?: number | null;
     threeMonth?: number | null;
     oneMonth?: number | null;
+    oneYear?: number | null;
+    twoYear?: number | null;
   };
 }
 
@@ -392,13 +394,13 @@ export function Research() {
         <div className="lg:col-span-1 bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl flex flex-col">
           <div className="p-2 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground font-mono">
+              <h2 className="text-sm ml-2 font-semibold text-foreground font-mono">
                 Watchlist ({researchStocks?.length || 0})
               </h2>
               <div className="flex items-center gap-1">
                 <button
                   onClick={() => setShowAddStockModal(true)}
-                  className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors font-mono"
+                  className="flex items-center gap-1 px-2 py-1 text-xs bg-white/20 hover:bg-primary/30 rounded-lg transition-colors font-mono"
                 >
                   <IconPlus className="h-3 w-3" />
                   Add
@@ -411,7 +413,6 @@ export function Research() {
                       : 'bg-card/40 hover:bg-card/60 border border-white/20'
                   }`}
                 >
-                  <IconSettings className="h-3 w-3" />
                   {showManageStocks ? 'Done' : 'Edit'}
                 </button>
               </div>
@@ -459,7 +460,7 @@ export function Research() {
                               <p className={`text-xs font-mono transition-colors duration-300 ${
                                 selectedTicker === stock.ticker ? 'text-blue-200' : 'text-primary'
                               }`}>
-                                ${stock.currentPrice.toFixed(0)}
+                                ${stock.currentPrice.toFixed(2)}
                               </p>
                             )}
                           </div>
@@ -590,10 +591,9 @@ export function Research() {
                     <button
                       onClick={handleRefreshData}
                       disabled={isLoadingData || isLoadingMotleyFool}
-                      className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors disabled:opacity-50"
+                      className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors disabled:opacity-50"
                     >
-                      <IconRefresh className={`h-3 w-3 ${(isLoadingData || isLoadingMotleyFool) ? 'animate-spin' : ''}`} />
-                      Refresh
+                      <IconRefresh className={`h-5 w-5 ${(isLoadingData || isLoadingMotleyFool) ? 'animate-spin' : ''}`} />
                     </button>
                   </div>
                 </div>
@@ -605,7 +605,7 @@ export function Research() {
                 {activeTab === 'fundamentals' && (
                   <>
                     {/* Performance Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
                   {stockData.performance?.ytd !== null && stockData.performance?.ytd !== undefined && (
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
@@ -638,6 +638,30 @@ export function Research() {
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.oneMonth)}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {stockData.performance?.oneYear !== null && stockData.performance?.oneYear !== undefined && (
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconTrendingUp className={`h-5 w-5 ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                        <span className="text-sm text-muted-foreground font-mono">1Y Performance</span>
+                      </div>
+                      <div className="text-xl font-bold font-mono">
+                        {formatPercentage(stockData.performance.oneYear)}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {stockData.performance?.twoYear !== null && stockData.performance?.twoYear !== undefined && (
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconChartLine className={`h-5 w-5 ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                        <span className="text-sm text-muted-foreground font-mono">2Y Performance</span>
+                      </div>
+                      <div className="text-xl font-bold font-mono">
+                        {formatPercentage(stockData.performance.twoYear)}
                       </div>
                     </div>
                   )}
@@ -1015,7 +1039,9 @@ export function Research() {
                                           tickFormatter={(value) => {
                                             const date = new Date(value);
                                             if (timeframe === '1h') {
-                                              return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                              // For hourly charts, show day and time
+                                              return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + 
+                                                     date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                             } else if (timeframe === '1d') {
                                               // For daily charts, show month/year for better readability
                                               return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
@@ -1025,7 +1051,7 @@ export function Research() {
                                               return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
                                             }
                                           }}
-                                          interval="preserveStartEnd"
+                                          interval={timeframe === '1h' ? Math.floor((chartData.chartData?.length || 0) / 6) : "preserveStartEnd"}
                                           stroke="rgba(255,255,255,0.6)"
                                           fontSize={10}
                                           fontFamily="monospace"
@@ -1124,7 +1150,9 @@ export function Research() {
                                           tickFormatter={(value) => {
                                             const date = new Date(value);
                                             if (timeframe === '1h') {
-                                              return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+                                              // For hourly charts, show day and time
+                                              return date.toLocaleDateString([], { month: 'short', day: 'numeric' }) + ' ' + 
+                                                     date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
                                             } else if (timeframe === '1d') {
                                               return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
                                             } else if (timeframe === '1wk') {
@@ -1133,7 +1161,7 @@ export function Research() {
                                               return date.toLocaleDateString([], { month: 'short', year: '2-digit' });
                                             }
                                           }}
-                                          interval="preserveStartEnd"
+                                          interval={timeframe === '1h' ? Math.floor((chartData.chartData?.length || 0) / 6) : "preserveStartEnd"}
                                           stroke="rgba(255,255,255,0.6)"
                                           fontSize={10}
                                           fontFamily="monospace"

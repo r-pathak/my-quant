@@ -22,6 +22,8 @@ export default defineSchema({
     ticker: v.string(),
     companyName: v.string(),
     currentPrice: v.optional(v.number()),
+    change: v.optional(v.number()),
+    changePercent: v.optional(v.number()),
     sector: v.optional(v.string()),
     marketCap: v.optional(v.number()),
     peRatio: v.optional(v.number()),

@@ -122,6 +122,8 @@ export const addResearchStock = mutation({
     ticker: v.string(),
     companyName: v.string(),
     currentPrice: v.optional(v.number()),
+    change: v.optional(v.number()),
+    changePercent: v.optional(v.number()),
     sector: v.optional(v.string()),
     marketCap: v.optional(v.number()),
     peRatio: v.optional(v.number()),
@@ -141,6 +143,8 @@ export const addResearchStock = mutation({
       ticker: args.ticker.toUpperCase(),
       companyName: args.companyName,
       currentPrice: args.currentPrice,
+      change: args.change,
+      changePercent: args.changePercent,
       sector: args.sector,
       marketCap: args.marketCap,
       peRatio: args.peRatio,
@@ -219,11 +223,13 @@ export const getStockResearchData = action({
   args: { ticker: v.string() },
   handler: async (ctx, args) => {
     try {
-      const [currentData, ytdData, threeMonthData, oneMonthData] = await Promise.all([
+      const [currentData, ytdData, threeMonthData, oneMonthData, oneYearData, twoYearData] = await Promise.all([
         fetchStockData(args.ticker),
         fetchHistoricalData(args.ticker, "ytd"),
         fetchHistoricalData(args.ticker, "3mo"),
         fetchHistoricalData(args.ticker, "1mo"),
+        fetchHistoricalData(args.ticker, "1y"),   // Added 1-year performance
+        fetchHistoricalData(args.ticker, "2y"),   // Added 2-year performance
       ]);
       
       if (!currentData) {
@@ -238,6 +244,8 @@ export const getStockResearchData = action({
             ytd: ytdData?.periodReturn || null,
             threeMonth: threeMonthData?.periodReturn || null,
             oneMonth: oneMonthData?.periodReturn || null,
+            oneYear: oneYearData?.periodReturn || null,     // Added 1-year performance
+            twoYear: twoYearData?.periodReturn || null,     // Added 2-year performance
           }
         }
       };

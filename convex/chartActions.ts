@@ -101,32 +101,36 @@ async function fetchChartData(ticker: string, timeframe: string) {
   try {
     console.log(`Fetching chart data for ${ticker} with timeframe ${timeframe}`);
     
-    // Define strategies using 'range' parameter instead of 'period'
+    // Define strategies using 'range' parameter instead of 'period' - INCREASED DATA POINTS
     const now = Math.floor(Date.now() / 1000);
     const strategies = {
       '1h': [
-        { interval: '1h', range: '5d' },     // 5 days of hourly data (max for 1h)
+        { interval: '1h', range: '7d' },     // 7 days of hourly data (Yahoo Finance max for 1h)
+        { interval: '1h', range: '5d' },     // Fallback: 5 days
         { interval: '1h', range: '2d' },     // Fallback: 2 days
         { interval: '1h', range: '1d' },     // Fallback: 1 day
       ],
       '1d': [
-        { interval: '1d', range: '1y' },     // 1 year of daily data
+        { interval: '1d', range: '2y' },     // 2 years of daily data (DOUBLED from 1y)
+        { interval: '1d', range: '1y' },     // Fallback: 1 year
         { interval: '1d', range: '6mo' },    // Fallback: 6 months
         { interval: '1d', range: '3mo' },    // Fallback: 3 months
         // Try date range approach as final fallback
-        { interval: '1d', period1: now - (365 * 24 * 60 * 60), period2: now }, // 1 year with timestamps
+        { interval: '1d', period1: now - (2 * 365 * 24 * 60 * 60), period2: now }, // 2 years with timestamps
       ],
       '1wk': [
-        { interval: '1wk', range: '2y' },    // 2 years of weekly data
+        { interval: '1wk', range: '5y' },    // 5 years of weekly data (INCREASED from 2y)
+        { interval: '1wk', range: '2y' },    // Fallback: 2 years
         { interval: '1wk', range: '1y' },    // Fallback: 1 year
         // Try date range approach
-        { interval: '1wk', period1: now - (2 * 365 * 24 * 60 * 60), period2: now }, // 2 years with timestamps
+        { interval: '1wk', period1: now - (5 * 365 * 24 * 60 * 60), period2: now }, // 5 years with timestamps
       ],
       '1mo': [
-        { interval: '1mo', range: '5y' },    // 5 years of monthly data
+        { interval: '1mo', range: '10y' },   // 10 years of monthly data (DOUBLED from 5y)
+        { interval: '1mo', range: '5y' },    // Fallback: 5 years
         { interval: '1mo', range: '2y' },    // Fallback: 2 years
         // Try date range approach
-        { interval: '1mo', period1: now - (5 * 365 * 24 * 60 * 60), period2: now }, // 5 years with timestamps
+        { interval: '1mo', period1: now - (10 * 365 * 24 * 60 * 60), period2: now }, // 10 years with timestamps
       ]
     };
     
