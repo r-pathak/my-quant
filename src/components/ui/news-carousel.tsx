@@ -138,17 +138,17 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                 </div>
 
                 <h3 className="text-lg font-bold text-foreground font-mono mb-3 line-clamp-3 leading-tight">
-                  {news[currentIndex].title}
+                  {news[currentIndex].title.toLowerCase()}
                 </h3>
                 
                 {/* Enhanced source info */}
                 <div className="flex items-center gap-3 text-sm text-muted-foreground font-mono mb-4">
                   <div className="flex items-center gap-2 bg-white/5 px-2 py-1 rounded-lg">
-                    <span className="font-semibold">{news[currentIndex].source}</span>
+                    <span className="font-semibold">{news[currentIndex].source.toLowerCase()}</span>
                   </div>
                   <span className="text-white/40">•</span>
                   <span className="bg-white/5 px-2 py-1 rounded-lg">
-                    {news[currentIndex].publishedAt}
+                    {news[currentIndex].publishedAt.toLowerCase()}
                   </span>
                 </div>
                 
@@ -156,7 +156,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                   <div className="relative">
                     <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-primary/60 to-green-500/60 rounded-full"></div>
                     <p className="text-sm text-muted-foreground font-mono line-clamp-4 pl-4 leading-relaxed">
-                      {news[currentIndex].summary}
+                      {news[currentIndex].summary.toLowerCase()}
                     </p>
                   </div>
                 )}

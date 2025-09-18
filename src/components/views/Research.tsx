@@ -311,24 +311,24 @@ export function Research() {
           </p>
           <div className="space-y-1 text-xs font-mono">
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Open:</span>
+              <span className="text-muted-foreground">open:</span>
               <span className="text-foreground">{formatCurrency(data.open)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">High:</span>
+              <span className="text-muted-foreground">high:</span>
               <span className="text-green-400">{formatCurrency(data.high)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Low:</span>
+              <span className="text-muted-foreground">low:</span>
               <span className="text-red-400">{formatCurrency(data.low)}</span>
             </div>
             <div className="flex justify-between gap-4">
-              <span className="text-muted-foreground">Close:</span>
+              <span className="text-muted-foreground">close:</span>
               <span className="text-foreground font-bold">{formatCurrency(data.close)}</span>
             </div>
             {data.volume && (
               <div className="flex justify-between gap-4 pt-1 border-t border-white/10">
-                <span className="text-muted-foreground">Volume:</span>
+                <span className="text-muted-foreground">volume:</span>
                 <span className="text-blue-400">{(data.volume / 1000000).toFixed(1)}M</span>
               </div>
             )}
@@ -337,25 +337,25 @@ export function Research() {
               <div className="pt-2 border-t border-white/10 space-y-1">
                 {data.sma20 && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-green-400 text-xs">SMA20:</span>
+                    <span className="text-green-400 text-xs">sma20:</span>
                     <span className="text-green-400 text-xs">{formatCurrency(data.sma20)}</span>
                   </div>
                 )}
                 {data.sma50 && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-yellow-400 text-xs">SMA50:</span>
+                    <span className="text-yellow-400 text-xs">sma50:</span>
                     <span className="text-yellow-400 text-xs">{formatCurrency(data.sma50)}</span>
                   </div>
                 )}
                 {data.rsi && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-blue-400 text-xs">RSI:</span>
+                    <span className="text-blue-400 text-xs">rsi:</span>
                     <span className="text-blue-400 text-xs">{data.rsi.toFixed(1)}</span>
                   </div>
                 )}
                 {data.bollingerMiddle && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-purple-400 text-xs">BB Mid:</span>
+                    <span className="text-purple-400 text-xs">bb mid:</span>
                     <span className="text-purple-400 text-xs">{formatCurrency(data.bollingerMiddle)}</span>
                   </div>
                 )}
@@ -388,6 +388,13 @@ export function Research() {
 
   return (
     <div className="flex flex-col h-full relative font-mono">
+      {/* Title */}
+      <div className="flex items-center justify-between mb-4 px-4 pt-4">
+        <div>
+          <h1 className="text-3xl font-bold text-foreground font-mono">research watchlist</h1>
+        </div>
+      </div>
+      
       {/* Main Content */}
       <div className="grid grid-cols-1 lg:grid-cols-5 gap-4 flex-1 min-h-0 p-4">
         {/* Left Sidebar - Ticker List */}
@@ -395,7 +402,7 @@ export function Research() {
           <div className="p-2 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h2 className="text-sm ml-2 font-semibold text-foreground font-mono">
-                watchlist ({researchStocks?.length || 0})
+                your list ({researchStocks?.length || 0})
               </h2>
               <div className="flex items-center gap-1">
                 <button
@@ -432,7 +439,7 @@ export function Research() {
                   </div>
                   <IconChartLine className="h-8 w-8 mx-auto text-primary relative z-10" />
                 </div>
-                <h3 className="text-sm font-bold text-foreground font-mono mb-2">your watchlist is empty</h3>
+                <h3 className="text-sm font-bold text-foreground font-mono mb-2">your followed stocks list is empty</h3>
                 <p className="text-xs text-muted-foreground font-mono mb-4 leading-relaxed">
                   add stocks to start your<br />research journey
                 </p>
@@ -532,13 +539,13 @@ export function Research() {
                         welcome to research
                       </h2>
                       <p className="text-muted-foreground font-mono leading-relaxed text-sm">
-                        start building your investment research by adding stocks to your watchlist. 
+                        start building your investment research by adding stocks to your followed stocks list. 
                         get comprehensive analysis, earnings summaries, and technical charts.
                       </p>
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 text-xs">
                         <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-400/20 rounded-lg p-3 text-center">
-                          <IconSparkles className="h-5 w-5 text-blue-400 mb-2 mx-auto" />
+                          {/* <IconSparkles className="h-5 w-5 text-blue-400 mb-2 mx-auto" /> */}
                           <div className="font-mono font-semibold text-blue-300">ai earnings</div>
                           <div className="text-muted-foreground font-mono">powered by firecrawl & openai</div>
                         </div>
@@ -572,7 +579,7 @@ export function Research() {
                     </div>
                     <h3 className="text-xl font-bold mb-2 font-mono text-foreground">select a stock</h3>
                     <p className="font-mono text-sm leading-relaxed">
-                      choose a ticker from your watchlist to view detailed research data, 
+                      choose a ticker from your followed stocks to view detailed research data, 
                       ai-powered earnings summaries, and technical analysis.
                     </p>
                   </div>
@@ -593,7 +600,7 @@ export function Research() {
                 <div className="flex items-center justify-between mb-3">
                   <div>
                     <h1 className="text-xl font-bold text-foreground font-mono mb-2">
-                      {stockData.ticker} - {stockData.companyName}
+                      {stockData.ticker.toLowerCase()} - {stockData.companyName.toLowerCase()}
                     </h1>
                     <div className="flex items-center gap-2 mt-1 mb-3">
                       <div className="text-lg font-bold text-foreground font-mono">
@@ -619,7 +626,7 @@ export function Research() {
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
                         )}
                         <span className="relative z-10 flex items-center gap-1">
-                        Fundamentals
+                        fundamentals
                         </span>
                       </button>
                       <button
@@ -634,7 +641,7 @@ export function Research() {
                           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
                         )}
                         <span className="relative z-10 flex items-center gap-1">
-                          Technicals
+                          technicals
                         </span>
                       </button>
                     </div>
@@ -644,7 +651,7 @@ export function Research() {
                     {/* 52-Week Range - Condensed */}
                     {stockData.fiftyTwoWeekHigh && stockData.fiftyTwoWeekLow && (
                       <div className="text-right">
-                        <div className="text-xs text-muted-foreground font-mono mb-1">52W Range</div>
+                        <div className="text-xs text-muted-foreground font-mono mb-1">52w range</div>
                         <div className="flex items-center gap-2 text-sm font-mono">
                           <span className="text-red-400">{formatCurrency(stockData.fiftyTwoWeekLow)}</span>
                           <div className="w-16 h-1 bg-white/10 rounded-full relative">
@@ -688,7 +695,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconTrendingUp className={`h-5 w-5 ${stockData.performance.ytd >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">YTD Performance</span>
+                        <span className="text-sm text-muted-foreground font-mono">ytd performance</span>
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.ytd)}
@@ -700,7 +707,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconChartLine className={`h-5 w-5 ${stockData.performance.threeMonth >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">3M Performance</span>
+                        <span className="text-sm text-muted-foreground font-mono">3m performance</span>
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.threeMonth)}
@@ -712,7 +719,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconCalendarStats className={`h-5 w-5 ${stockData.performance.oneMonth >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">1M Performance</span>
+                        <span className="text-sm text-muted-foreground font-mono">1m performance</span>
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.oneMonth)}
@@ -724,7 +731,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconTrendingUp className={`h-5 w-5 ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">1Y Performance</span>
+                        <span className="text-sm text-muted-foreground font-mono">1y performance</span>
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.oneYear)}
@@ -736,7 +743,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconChartLine className={`h-5 w-5 ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">2Y Performance</span>
+                        <span className="text-sm text-muted-foreground font-mono">2y performance</span>
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.twoYear)}
@@ -759,33 +766,33 @@ export function Research() {
                             <div className="absolute inset-0 w-8 h-8 border-3 border-purple-400/20 border-r-purple-400 rounded-full animate-spin animate-reverse"></div>
                           </div>
                           <div>
-                            <h3 className="text-base font-bold text-foreground font-mono">Analyzing Market Data</h3>
-                            <div className="text-xs text-blue-300 font-mono">Powered by Firecrawl 🔥 & OpenAI 🧠</div>
+                            <h3 className="text-base font-bold text-foreground font-mono">analyzing market data</h3>
+                            <div className="text-xs text-blue-300 font-mono">powered by firecrawl 🔥 & openai 🧠</div>
                           </div>
                         </div>
                         
                         <div className="space-y-3">
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
-                            <span className="text-sm font-mono text-muted-foreground">Detecting exchange (NYSE/NASDAQ)...</span>
+                            <span className="text-sm font-mono text-muted-foreground">detecting exchange (NYSE/NASDAQ)...</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse delay-300"></div>
-                            <span className="text-sm font-mono text-muted-foreground">Scraping Motley Fool financial data...</span>
+                            <span className="text-sm font-mono text-muted-foreground">scraping motley fool financial data...</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-pink-400 rounded-full animate-pulse delay-500"></div>
-                            <span className="text-sm font-mono text-muted-foreground">Fetching earnings transcripts...</span>
+                            <span className="text-sm font-mono text-muted-foreground">fetching earnings transcripts...</span>
                           </div>
                           <div className="flex items-center gap-3">
                             <div className="w-2 h-2 bg-cyan-400 rounded-full animate-pulse delay-700"></div>
-                            <span className="text-sm font-mono text-muted-foreground">Generating AI earnings summary...</span>
+                            <span className="text-sm font-mono text-muted-foreground">generating AI earnings summary...</span>
                           </div>
                         </div>
                         
                         <div className="mt-4 pt-3 border-t border-white/10">
                           <div className="text-xs text-muted-foreground font-mono italic">
-                            ✨ This may take 10-30 seconds for comprehensive analysis
+                            ✨ this may take 10-30 seconds for comprehensive analysis
                           </div>
                         </div>
                       </div>
@@ -798,8 +805,8 @@ export function Research() {
                   <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl p-5 shadow-2xl">
                     <div className="flex items-center gap-2 mb-4">
                       <div>
-                        <h3 className="text-base font-bold text-foreground font-mono">Motley Fool Data</h3>
-                        <div className="text-xs text-white/60 font-mono ">Powered by Firecrawl 🔥</div>
+                        <h3 className="text-base font-bold text-foreground font-mono">motley fool data</h3>
+                        <div className="text-xs text-white/60 font-mono ">powered by firecrawl 🔥</div>
                       </div>
                     </div>
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
@@ -811,38 +818,38 @@ export function Research() {
                       )}
                       {motleyFoolData.stockData.market_cap && motleyFoolData.stockData.market_cap !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">Market Cap</div>
+                          <div className="text-muted-foreground font-mono mb-1">market cap</div>
                           <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.market_cap}</div>
                         </div>
                       )}
                       {motleyFoolData.stockData.dividend_yield && motleyFoolData.stockData.dividend_yield !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">Dividend Yield</div>
+                          <div className="text-muted-foreground font-mono mb-1">dividend yield</div>
                           <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.dividend_yield}</div>
                         </div>
                       )}
                       {motleyFoolData.stockData.sector && motleyFoolData.stockData.sector !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">Sector</div>
-                          <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.sector}</div>
+                          <div className="text-muted-foreground font-mono mb-1">sector</div>
+                          <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.sector.toLowerCase()}</div>
                         </div>
                       )}
                       {motleyFoolData.stockData.fifty_two_week_high && motleyFoolData.stockData.fifty_two_week_high !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">52W High</div>
+                          <div className="text-muted-foreground font-mono mb-1">52w high</div>
                           <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.fifty_two_week_high}</div>
                         </div>
                       )}
                       {motleyFoolData.stockData.fifty_two_week_low && motleyFoolData.stockData.fifty_two_week_low !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">52W Low</div>
+                          <div className="text-muted-foreground font-mono mb-1">52w low</div>
                           <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.fifty_two_week_low}</div>
                         </div>
                       )}
                     </div>
                     {motleyFoolData.stockData.description && motleyFoolData.stockData.description !== "N/A" && (
                         <div className="mt-4 pt-4 border-t border-white/10">
-                          <div className="text-muted-foreground font-mono mb-2 text-sm">Company Description</div>
+                          <div className="text-muted-foreground font-mono mb-2 text-sm">description</div>
                           <div className="group cursor-pointer">
                             <div 
                               ref={(el) => {
@@ -866,7 +873,7 @@ export function Research() {
                                 const element = e.currentTarget;
                                 const parentContainer = element.closest('.bg-card\\/40') as HTMLElement;
                                 if (parentContainer) {
-                                  parentContainer.style.zIndex = '50';
+                                  parentContainer.style.zIndex = '20';
                                   parentContainer.style.position = 'relative';
                                 }
                                 element.style.display = 'block';
@@ -885,7 +892,7 @@ export function Research() {
                                 element.style.overflow = 'hidden';
                               }}
                             >
-                              {motleyFoolData.stockData.description}
+                              {motleyFoolData.stockData.description.toLowerCase()}
                             </div>
                             <div className="text-xs text-muted-foreground font-mono mt-1 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
                               Hover to read more...
@@ -898,7 +905,7 @@ export function Research() {
                       <div className="bg-card/40 backdrop-blur-xl border border-red-300/50 rounded-xl p-4 shadow-2xl">
                         <div>
                           <h3 className="text-base font-bold text-foreground font-mono mb-1">Motley Fool Data</h3>
-                          <div className="text-xs text-red-400 font-mono mb-2 font-semibold">Powered by Firecrawl 🔥</div>
+                          <div className="text-xs text-red-400 font-mono mb-2 font-semibold">powered by firecrawl 🔥</div>
                           <div className="text-sm text-muted-foreground font-mono">
                             Failed to load data: {motleyFoolData.errors?.join(', ')}
                           </div>
@@ -922,9 +929,10 @@ export function Research() {
                           <div className="flex items-center gap-3">
                             <div className="flex items-center gap-2">
                                 <div>
-                                  <h3 className="text-base font-bold flex items-center gap-2 text-foreground font-mono">Latest Earnings Summary <IconSparkles className="size-6" /></h3>
+                                  <h3 className="text-base font-bold flex items-center gap-2 text-foreground font-mono">
+                                    latest earnings summary </h3>
                                   <div className="flex items-center gap-2 text-xs text-purple-300">
-                                    <span className="font-mono">Powered by Firecrawl 🔥 + OpenAI 🧠</span>
+                                    <span className="font-mono">powered by firecrawl 🔥 + openai 🧠</span>
                                   </div>
                                 </div>
                             </div>
@@ -936,29 +944,29 @@ export function Research() {
                             className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-300/30 rounded-xl transition-all duration-300 transform hover:scale-105"
                           >
                             <IconExternalLink className="h-4 w-4" />
-                            <span className="font-mono">Read Full Transcript</span>
+                            <span className="font-mono">read full transcript</span>
                           </a>
                         </div>
                         
                         <div className="mb-4">
                           <div className="flex items-center gap-3 text-sm text-muted-foreground font-mono mb-2">
-                            <span className="px-2 py-1 bg-purple-500/20 rounded-lg">{motleyFoolData.latestEarnings.period}</span>
+                            <span className="px-2 py-1 bg-purple-500/20 rounded-lg">{motleyFoolData.latestEarnings.period.toLowerCase()}</span>
                             <span>•</span>
-                            <span>{motleyFoolData.latestEarnings.date}</span>
+                            <span>{motleyFoolData.latestEarnings.date.toLowerCase()}</span>
                           </div>
-                          <div className="text-sm font-mono text-foreground font-semibold opacity-90">
-                            {motleyFoolData.latestEarnings.title}
-                          </div>
+                          {/* <div className="text-sm font-mono text-foreground font-semibold opacity-90">
+                            {motleyFoolData.latestEarnings.title.toLowerCase()}
+                          </div> */}
                         </div>
                         
                         <div className="relative">
                           <div className="text-sm text-foreground font-mono leading-relaxed bg-gradient-to-br from-white/5 to-white/10 rounded-xl p-4 border border-white/10">
-                            {motleyFoolData.latestEarnings.summary}
+                            {motleyFoolData.latestEarnings.summary.toLowerCase()}
                           </div>
-                          {/* AI Badge */}
+                          {/* AI Badge
                           <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-mono font-bold shadow-lg">
                             AI
-                          </div>
+                          </div> */}
                         </div>
                       </div>
                     )}
@@ -971,7 +979,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconBuilding className="h-5 w-5 text-blue-400" />
-                        <span className="text-sm text-muted-foreground font-mono">Market Cap</span>
+                        <span className="text-sm text-muted-foreground font-mono">market cap</span>
                       </div>
                       <div className="text-lg font-bold text-foreground font-mono">
                         {formatMarketCap(stockData.marketCap)}
@@ -983,7 +991,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconPercentage className="h-5 w-5 text-green-400" />
-                        <span className="text-sm text-muted-foreground font-mono">P/E Ratio</span>
+                        <span className="text-sm text-muted-foreground font-mono">p/e ratio</span>
                       </div>
                       <div className="text-lg font-bold text-foreground font-mono">
                         {stockData.peRatio.toFixed(2)}
@@ -995,7 +1003,7 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconCurrencyDollar className="h-5 w-5 text-yellow-400" />
-                        <span className="text-sm text-muted-foreground font-mono">Dividend Yield</span>
+                        <span className="text-sm text-muted-foreground font-mono">dividend yield</span>
                       </div>
                       <div className="text-lg font-bold text-foreground font-mono">
                         {stockData.dividendYield.toFixed(2)}%
@@ -1007,10 +1015,10 @@ export function Research() {
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
                         <IconBuilding className="h-5 w-5 text-primary" />
-                        <span className="text-sm text-muted-foreground font-mono">Sector</span>
+                        <span className="text-sm text-muted-foreground font-mono">sector</span>
                       </div>
                       <div className="text-lg font-bold text-foreground font-mono">
-                        {stockData.sector}
+                        {stockData.sector.toLowerCase()}
                       </div>
                     </div>
                   )}
@@ -1024,7 +1032,7 @@ export function Research() {
                     {/* Chart Controls */}
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl p-3 shadow-2xl">
                       <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-base font-bold text-foreground font-mono">Chart Controls</h3>
+                        <h3 className="text-base font-bold text-foreground font-mono">chart controls</h3>
                       </div>
                       
                       <div>
@@ -1032,7 +1040,7 @@ export function Research() {
                           {/* Timeframe Selection */}
                           <div className="flex items-center gap-3">
                             <label className="text-xs font-medium text-muted-foreground font-mono whitespace-nowrap">
-                              Timeframe:
+                              timeframe:
                             </label>
                             <div className="flex gap-2">
                               {(['1h', '1d', '1wk', '1mo'] as const).map((tf) => (
@@ -1045,7 +1053,7 @@ export function Research() {
                                       : 'bg-card/40 hover:bg-card/60 border border-white/20 text-muted-foreground hover:text-foreground'
                                   }`}
                                 >
-                                  {tf.toUpperCase()}
+                                  {tf.toLowerCase()}
                                 </button>
                               ))}
                             </div>
@@ -1054,7 +1062,7 @@ export function Research() {
                           {/* Indicators */}
                           <div className="flex items-center gap-3">
                             <label className="text-xs font-medium text-muted-foreground font-mono whitespace-nowrap">
-                              Indicators:
+                              indicators:
                             </label>
                             <div className="flex gap-2 flex-wrap">
                               {Object.entries(indicators).map(([key, value]) => (
@@ -1067,7 +1075,7 @@ export function Research() {
                                       : 'bg-card/40 hover:bg-card/60 border border-white/20 text-muted-foreground hover:text-foreground'
                                   }`}
                                 >
-                                  {key.toUpperCase()}
+                                  {key.toLowerCase()}
                                 </button>
                               ))}
                             </div>
@@ -1079,9 +1087,9 @@ export function Research() {
                     {/* Price Chart */}
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl">
                       <div className="p-4 border-b border-white/10">
-                        <h3 className="text-lg font-bold text-foreground font-mono">Price Chart</h3>
+                        <h3 className="text-lg font-bold text-foreground font-mono">price chart</h3>
                         <p className="text-sm text-muted-foreground font-mono">
-                          {stockData.ticker} • {timeframe.toUpperCase()} • {Object.entries(indicators).filter(([, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'No indicators'}
+                          {stockData.ticker.toLowerCase()} • {timeframe.toLowerCase()} • {Object.entries(indicators).filter(([, v]) => v).map(([k]) => k.toLowerCase()).join(', ') || 'No indicators'}
                         </p>
                       </div>
                       
@@ -1090,7 +1098,7 @@ export function Research() {
                           <div className="h-96 flex items-center justify-center">
                             <div className="text-center">
                               <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                              <p className="text-sm text-muted-foreground font-mono">Loading chart data...</p>
+                              <p className="text-sm text-muted-foreground font-mono">loading chart data...</p>
                             </div>
                           </div>
                         ) : chartData ? (
@@ -1098,10 +1106,10 @@ export function Research() {
                             <div className="h-full flex flex-col">
                               <div className="flex items-center justify-between mb-4">
                                 <div className="text-sm font-mono text-muted-foreground">
-                                  {chartData.dataPoints || chartData.chartData?.length || 0} data points • {chartData.meta?.currency || 'USD'} • {chartData.period}
+                                  {chartData.dataPoints || chartData.chartData?.length || 0} data points • {chartData.meta?.currency || 'usd'} • {chartData.period}
                                 </div>
                                 <div className="text-sm font-mono text-foreground">
-                                  Latest: {chartData.meta?.regularMarketPrice ? formatCurrency(chartData.meta.regularMarketPrice) : '--'}
+                                  latest: {chartData.meta?.regularMarketPrice ? formatCurrency(chartData.meta.regularMarketPrice) : '--'}
                                 </div>
                               </div>
                               
@@ -1295,7 +1303,7 @@ export function Research() {
                           <div className="h-96 flex items-center justify-center">
                             <div className="text-center text-muted-foreground">
                               <IconChartLine className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                              <p className="font-mono">No chart data available</p>
+                              <p className="font-mono">no chart data available</p>
                               <button
                                 onClick={() => {
                                   setIsLoadingChart(true);
@@ -1305,7 +1313,7 @@ export function Research() {
                                       chartData: [],
                                       dataPoints: 0,
                                       period: 'No data',
-                                      meta: { currency: 'USD' }
+                                      meta: { currency: 'usd' }
                                     });
                                     setIsLoadingChart(false);
                                   }, 2000);
@@ -1339,10 +1347,10 @@ export function Research() {
 
       {/* Add Stock Modal */}
       {showAddStockModal && (
-        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
+        <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-40">
           <div className="bg-purple-900/30 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-foreground font-mono">add stock to watchlist</h3>
+              <h3 className="text-lg font-bold text-foreground font-mono">add stock to followed stocks</h3>
               <button
                 onClick={() => {
                   setShowAddStockModal(false);

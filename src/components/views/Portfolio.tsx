@@ -136,7 +136,7 @@ export default function Portfolio() {
     }
   };
   return (
-    <div className="flex flex-col h-full space-y-6 relative">
+    <div className="flex flex-col h-full space-y-8 relative">
       {/* Loading overlay */}
       {isUpdatingPrices && (
         <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center rounded-3xl">

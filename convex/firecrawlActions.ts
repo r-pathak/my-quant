@@ -448,11 +448,11 @@ export const getMotleyFoolData = action({
             
             if (summaryResult.success) {
               latestEarnings = {
-                title: latestTranscript.title,
-                date: latestTranscript.date,
-                period: latestTranscript.period || latestTranscript.quarter,
+                title: latestTranscript.title.toLowerCase(),
+                date: latestTranscript.date.toLowerCase(),
+                period: latestTranscript.period || latestTranscript.quarter.toLowerCase(),
                 url: latestTranscript.url,
-                summary: summaryResult.summary
+                summary: summaryResult.summary.toLowerCase()
               };
             } else {
               errors.push(`Earnings summary: ${summaryResult.error}`);

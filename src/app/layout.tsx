@@ -65,19 +65,19 @@ export default function RootLayout({
               
               {/* Subtle left edge gradient */}
               <div className="absolute left-0 top-0 h-full w-96 bg-gradient-to-r from-purple-500/5 via-purple-500/2 to-transparent pointer-events-none"></div>
-              <div className="fixed left-8 top-2  z-50">
+              <div className="fixed left-5 top-2  z-50">
                 {/* <IconBrain className="h-12 w-12 text-pink-500/90 ml-2 mb-4" /> */}
-                <Image src="/logo-white.png" alt="myquant" width={100} height={100} />
+                <Image src="/logo-white.png" alt="myquant" width={80} height={80} />
               </div>
-              <div className="fixed right-6 top-6 z-50">
+              <div className="absolute right-6 top-6 z-50">
                 <UserMenu />
               </div>
               <div className="fixed left-6 top-1/2 transform -translate-y-1/2 z-50">
                 <VerticalSidebar items={sidebarItems} />
               </div>
-              <main className="flex-1 px-4 py-8 ml-24 flex items-center justify-center min-h-screen">
+              <main className="flex-1 px-4 pt-24 pb-8 ml-24 flex items-center justify-center min-h-screen relative z-10">
                 <div className="w-full">
-                  <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6">
+                  <div className="backdrop-blur-md bg-white/5 border border-white/10 rounded-3xl shadow-2xl p-6 relative z-0">
                     {children}
                   </div>
                 </div>
