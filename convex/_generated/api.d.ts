@@ -8,20 +8,24 @@
  * @module
  */
 
-import type {
-  ApiFromModules,
-  FilterApi,
-  FunctionReference,
-} from "convex/server";
+import type * as auth from "../auth.js";
 import type * as chartActions from "../chartActions.js";
 import type * as firecrawlActions from "../firecrawlActions.js";
 import type * as holdings from "../holdings.js";
+import type * as http from "../http.js";
 import type * as newsActions from "../newsActions.js";
 import type * as priceActions from "../priceActions.js";
 import type * as researchActions from "../researchActions.js";
 import type * as seedHoldings from "../seedHoldings.js";
 import type * as seedResearch from "../seedResearch.js";
 import type * as tasks from "../tasks.js";
+import type * as users from "../users.js";
+
+import type {
+  ApiFromModules,
+  FilterApi,
+  FunctionReference,
+} from "convex/server";
 
 /**
  * A utility for referencing Convex functions in your app's API.
@@ -32,21 +36,28 @@ import type * as tasks from "../tasks.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  auth: typeof auth;
   chartActions: typeof chartActions;
   firecrawlActions: typeof firecrawlActions;
   holdings: typeof holdings;
+  http: typeof http;
   newsActions: typeof newsActions;
   priceActions: typeof priceActions;
   researchActions: typeof researchActions;
   seedHoldings: typeof seedHoldings;
   seedResearch: typeof seedResearch;
   tasks: typeof tasks;
+  users: typeof users;
 }>;
+declare const fullApiWithMounts: typeof fullApi;
+
 export declare const api: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "public">
 >;
 export declare const internal: FilterApi<
-  typeof fullApi,
+  typeof fullApiWithMounts,
   FunctionReference<any, "internal">
 >;
+
+export declare const components: {};

@@ -2,6 +2,25 @@ import { action, query, mutation } from "./_generated/server";
 import { api } from "./_generated/api";
 import { v } from "convex/values";
 
+// Helper function to get current user
+async function getCurrentUser(ctx: any) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Not authenticated");
+  }
+  
+  // In Convex Auth, the identity.subject is the user ID
+  // Extract the user ID from the subject (format: "userId|sessionId")
+  const userId = identity.subject.split('|')[0];
+  
+  const user = await ctx.db.get(userId as any);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  
+  return user;
+}
+
 // Function to fetch comprehensive stock data from Yahoo Finance
 async function fetchStockData(ticker: string) {
   try {
@@ -97,21 +116,28 @@ async function fetchHistoricalData(ticker: string, period: string = "1y") {
   }
 }
 
-// Query to get all research stocks
+// Query to get all research stocks for current user
 export const getAllResearchStocks = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("researchStocks").collect();
+    const user = await getCurrentUser(ctx);
+    
+    return await ctx.db
+      .query("researchStocks")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
   },
 });
 
-// Query to get a specific research stock by ticker
+// Query to get a specific research stock by ticker for current user
 export const getResearchStockByTicker = query({
   args: { ticker: v.string() },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
     return await ctx.db
       .query("researchStocks")
-      .withIndex("by_ticker", (q) => q.eq("ticker", args.ticker.toUpperCase()))
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker.toUpperCase()))
       .first();
   },
 });
@@ -130,9 +156,11 @@ export const addResearchStock = mutation({
     dividendYield: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
     const existingStock = await ctx.db
       .query("researchStocks")
-      .withIndex("by_ticker", (q) => q.eq("ticker", args.ticker.toUpperCase()))
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker.toUpperCase()))
       .first();
     
     if (existingStock) {
@@ -140,6 +168,7 @@ export const addResearchStock = mutation({
     }
     
     return await ctx.db.insert("researchStocks", {
+      userId: user._id,
       ticker: args.ticker.toUpperCase(),
       companyName: args.companyName,
       currentPrice: args.currentPrice,

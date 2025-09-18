@@ -142,7 +142,7 @@ export default function Portfolio() {
         <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center rounded-3xl">
           <div className="bg-card/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 flex items-center gap-4 shadow-2xl">
             <IconRefresh className="h-6 w-6 animate-spin text-primary" />
-            <span className="text-base text-foreground font-mono font-medium">Updating prices...</span>
+            <span className="text-base text-foreground font-mono font-medium">updating prices...</span>
           </div>
         </div>
       )}
@@ -150,7 +150,7 @@ export default function Portfolio() {
       <div className="flex items-center justify-between">
         <div>
           <div className="flex items-center gap-3 mb-2">
-            <h1 className="text-3xl font-bold text-foreground font-mono">Portfolio</h1>
+            <h1 className="text-3xl font-bold text-foreground font-mono">portfolio</h1>
             <div className={`px-3 py-1 rounded-full text-sm font-mono font-medium ${todaysPnLPercentage >= 0
                 ? 'bg-green-500/20 text-green-400 border border-green-500/30'
                 : 'bg-red-500/20 text-red-400 border border-red-500/30'
@@ -161,16 +161,16 @@ export default function Portfolio() {
 
           {lastUpdated && (
             <p className="text-xs text-muted-foreground mt-1 font-mono">
-              Last updated: {lastUpdated.toLocaleTimeString()}
+              last updated: {lastUpdated.toLocaleTimeString()}
             </p>
           )}
         </div>
         <div className="flex items-center gap-4">
           <Button
             onClick={() => {
-              // TODO: Implement MyQuant Update agent call
-              console.log('MyQuant Update clicked - Agent call feature coming soon!');
-              alert('MyQuant Update: Agent call feature coming soon! 📞');
+              // TODO: Implement myquant Update agent call
+              console.log('myquant Update clicked - Agent call feature coming soon!');
+              alert('myquant Update: Agent call feature coming soon! 📞');
             }}
             borderRadius="0.5rem"
             className="bg-gradient-to-r from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
@@ -179,7 +179,7 @@ export default function Portfolio() {
           >
             <div className="flex items-center gap-2"> 
               <IconPhoneSpark className="h-5 w-5" />
-              MyQuant Update
+              myquant update
             </div>
           </Button>
           
@@ -188,7 +188,7 @@ export default function Portfolio() {
             className="flex h-10 items-center gap-2 px-3 py-2 bg-primary/20 hover:bg-primary/30 border border-white/40 rounded-lg transition-colors"
           >
             <IconPlus className="h-4 w-4" />
-            <span className="text-sm font-mono">Add Holding</span>
+            <span className="text-sm font-mono">add holding</span>
           </button>
           
           <button
@@ -218,7 +218,7 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground font-mono">Total Value</p>
+                <p className="text-xs text-muted-foreground font-mono">total value</p>
                 <p className="text-xl font-bold text-foreground font-mono">
                   ${portfolioSummary ? portfolioSummary.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                 </p>
@@ -240,7 +240,7 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-mono">Today&apos;s P&L</p>
+                <p className="text-sm text-muted-foreground font-mono">today&apos;s p&l</p>
                 <p className={`text-2xl font-bold font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {todaysPnL >= 0 ? '+' : ''}${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
@@ -262,7 +262,7 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-sm text-muted-foreground font-mono">Active Positions</p>
+                <p className="text-sm text-muted-foreground font-mono">active positions</p>
                 <p className="text-2xl font-bold text-foreground font-mono">
                   {portfolioSummary ? portfolioSummary.activePositions : 0}
                 </p>
@@ -279,7 +279,7 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground font-mono">All-Time P&L</p>
+                <p className="text-xs text-muted-foreground font-mono">unrealized p&l</p>
                 <p className={`text-xl font-bold font-mono ${allTimePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {allTimePnL >= 0 ? '+' : ''}${Math.abs(allTimePnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
@@ -310,8 +310,8 @@ export default function Portfolio() {
         {/* Stock Holdings */}
         <div className="lg:col-span-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col" style={{ maxHeight: '500px' }}>
           <div className="p-4 border-b border-white/10 flex-shrink-0">
-            <h2 className="text-xl font-semibold text-foreground font-mono">
-              Holdings ({sortedHoldings.length})
+            <h2 className="text-md font-semibold text-foreground font-mono">
+              holdings ({sortedHoldings.length})
             </h2>
           </div>
           {sortedHoldings.length > 0 ? (
@@ -325,6 +325,7 @@ export default function Portfolio() {
                   const pnl = totalValue - costBasis;
                   const pnlPercentage = (pnl / costBasis) * 100;
                   const dailyChange = dailyChanges[holding.ticker];
+                  const dailyValueChange = dailyChange ? dailyChange.change * holding.unitsHeld : 0;
 
                   return (
                     <div
@@ -337,10 +338,10 @@ export default function Portfolio() {
                         <div className="flex items-center justify-between mb-3">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                              <span className="text-primary font-bold text-sm font-mono">{holding.ticker}</span>
+                              <span className="text-primary font-bold text-sm font-mono">{'$' + holding.ticker.toLowerCase()}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-mono text-foreground truncate">{holding.companyName}</h3>
+                              <h3 className="text-sm font-mono text-foreground truncate">{holding.companyName.toLowerCase()}</h3>
                               <p className="text-xs text-muted-foreground font-mono">{holding.sector || 'Unknown Sector'}</p>
                             </div>
                           </div>
@@ -350,13 +351,20 @@ export default function Portfolio() {
                         </div>
                         <div className="space-y-2">
                           <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground font-mono">Total Value</span>
-                            <span className="text-sm font-mono font-semibold text-foreground">
-                              ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
-                            </span>
+                            <span className="text-xs text-muted-foreground font-mono">total value</span>
+                            <div className="text-right">
+                              <span className="text-sm font-mono font-semibold text-foreground">
+                                ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                              </span>
+                              {dailyChange && (
+                                <div className={`text-xs font-mono ${dailyValueChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {dailyValueChange >= 0 ? '+' : '-'}${Math.abs(dailyValueChange).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </div>
+                              )}
+                            </div>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground font-mono">Current Price</span>
+                            <span className="text-xs text-muted-foreground font-mono">current price</span>
                             <div className="flex flex-row items-center gap-2">
                               <span className="text-sm font-mono text-foreground">${currentPrice.toFixed(2)}</span>
                               {dailyChange && (
@@ -375,15 +383,15 @@ export default function Portfolio() {
                             </div>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground font-mono">Bought Price</span>
+                            <span className="text-xs text-muted-foreground font-mono">bought price</span>
                             <span className="text-sm font-mono text-foreground">${holding.boughtPrice.toFixed(2)}</span>
                           </div>
                           <div className="flex justify-between items-center">
-                            <span className="text-xs text-muted-foreground font-mono">Shares</span>
+                            <span className="text-xs text-muted-foreground font-mono">shares</span>
                             <span className="text-sm font-mono text-foreground">{holding.unitsHeld}</span>
                           </div>
                           <div className="flex justify-between items-center pt-2 border-t border-white/10">
-                            <span className="text-xs text-muted-foreground font-mono">P&L</span>
+                            <span className="text-xs text-muted-foreground font-mono">p&l</span>
                             <div className="text-right">
                               <div className={`text-sm font-mono font-semibold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'
                                 }`}>
@@ -404,18 +412,17 @@ export default function Portfolio() {
                           {/* Left side - Ticker and Company */}
                           <div className="flex items-center gap-4 flex-1 min-w-0">
                             <div className="w-12 h-12 bg-primary/20 rounded-xl flex items-center justify-center border border-primary/30">
-                              <span className="text-primary font-bold text-sm font-mono">{holding.ticker}</span>
+                              <span className="text-primary font-bold text-sm font-mono">{holding.ticker.toLowerCase()}</span>
                             </div>
                             <div className="flex-1 min-w-0">
-                              <h3 className="text-sm font-mono text-foreground truncate">{holding.companyName}</h3>
-                              <p className="text-xs text-muted-foreground font-mono">{holding.sector || 'Unknown Sector'}</p>
+                              <h3 className="text-sm font-mono text-foreground truncate">{holding.companyName.toLowerCase()}</h3>
                             </div>
                           </div>
 
                           {/* Right side - All financial data */}
                           <div className="flex items-center gap-8 flex-1 justify-end">
                             <div className="text-right">
-                              <p className="text-xs text-muted-foreground font-mono">Current Price</p>
+                              <p className="text-xs text-muted-foreground font-mono">current price</p>
                               <div className="flex flex-row items-center gap-2 justify-end">
                                 <p className="text-sm font-mono font-semibold text-foreground">${currentPrice.toFixed(2)}</p>
                                 {dailyChange && (
@@ -434,23 +441,28 @@ export default function Portfolio() {
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-muted-foreground font-mono">Bought Price</p>
+                            <p className="text-xs text-muted-foreground font-mono">bought price</p>
                               <p className="text-sm font-mono text-foreground">${holding.boughtPrice.toFixed(2)}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-muted-foreground font-mono">Shares</p>
+                              <p className="text-xs text-muted-foreground font-mono">shares</p>
                               <p className="text-sm font-mono text-foreground">{holding.unitsHeld}</p>
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-muted-foreground font-mono">Total Value</p>
+                              <p className="text-xs text-muted-foreground font-mono">total value</p>
                               <p className="text-sm font-mono font-semibold text-foreground">
                                 ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </p>
+                              {dailyChange && (
+                                <div className={`text-xs font-mono ${dailyValueChange >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                                  {dailyValueChange >= 0 ? '+' : '-'}${Math.abs(dailyValueChange).toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                                </div>
+                              )}
                             </div>
                             <div className="text-right">
-                              <p className="text-xs text-muted-foreground font-mono">P&L</p>
+                              <p className="text-xs text-muted-foreground font-mono">p&l</p>
                               <div className={`text-sm font-mono font-semibold ${pnl >= 0 ? 'text-green-400' : 'text-red-400'
-                                }`}>
+                                }`}>  
                                 {pnl >= 0 ? '+' : ''}${pnl.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
                               </div>
                               <div className={`text-xs font-mono ${pnlPercentage >= 0 ? 'text-green-400' : 'text-red-400'
@@ -471,7 +483,7 @@ export default function Portfolio() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground font-mono">No holdings found. Add some positions to get started!</p>
+              <p className="text-muted-foreground font-mono">no holdings found. Add some positions to get started!</p>
             </div>
           )}
         </div>

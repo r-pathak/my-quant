@@ -87,7 +87,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
       <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl h-full flex items-center justify-center">
         <div className="text-center">
           <IconNews className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <p className="text-muted-foreground font-mono">Add holdings to see related news</p>
+          <p className="text-muted-foreground font-mono">add holdings to see related news</p>
         </div>
       </div>
     );
@@ -99,7 +99,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
       <div className="p-6 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between">
           <h2 className="text-xl font-semibold text-foreground font-mono flex items-center gap-2">
-            News (Powered by Firecrawl 🔥)
+            news (powered by firecrawl 🔥)
           </h2>
           <button
             onClick={handleRefresh}
@@ -210,12 +210,12 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
               <IconNews className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground font-mono">No news available</p>
+              <p className="text-muted-foreground font-mono">no news available</p>
               <button
                 onClick={handleRefresh}
                 className="mt-2 px-3 py-1 bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors font-mono text-sm"
               >
-                Try again
+                try again
               </button>
             </div>
           </div>

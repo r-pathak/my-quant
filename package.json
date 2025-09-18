@@ -9,13 +9,16 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@auth/core": "^0.37.4",
+    "@convex-dev/auth": "^0.0.89",
     "@mendable/firecrawl-js": "^4.3.5",
     "@tabler/icons-react": "^3.35.0",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "convex": "^1.27.0",
+    "jose": "^6.1.0",
     "lucide-react": "^0.544.0",
-    "motion": "^12.23.14",
+    "motion": "^12.23.15",
     "next": "15.5.3",
     "openai": "^5.21.0",
     "react": "19.1.0",

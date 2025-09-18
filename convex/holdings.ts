@@ -1,8 +1,28 @@
 import { v } from "convex/values";
 import { query, mutation } from "./_generated/server";
 
+// Helper function to get current user
+async function getCurrentUser(ctx: any) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Not authenticated");
+  }
+  
+  // In Convex Auth, the identity.subject is the user ID
+  // Extract the user ID from the subject (format: "userId|sessionId")
+  const userId = identity.subject.split('|')[0];
+  
+  const user = await ctx.db.get(userId as any);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  
+  return user;
+}
+
 // Schema for holdings table
 export const schema = {
+  userId: v.id("users"),
   ticker: v.string(),
   companyName: v.string(),
   unitsHeld: v.number(),
@@ -15,31 +35,41 @@ export const schema = {
   notes: v.optional(v.string()),
 };
 
-// Query to get all holdings
+// Query to get all holdings for the current user
 export const getAll = query({
   args: {},
   handler: async (ctx) => {
-    return await ctx.db.query("holdings").collect();
-  },
-});
-
-// Query to get holdings by ticker
-export const getByTicker = query({
-  args: { ticker: v.string() },
-  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
     return await ctx.db
       .query("holdings")
-      .filter((q) => q.eq(q.field("ticker"), args.ticker))
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .collect();
   },
 });
 
-// Query to get holdings by position type
+// Query to get holdings by ticker for current user
+export const getByTicker = query({
+  args: { ticker: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
+    return await ctx.db
+      .query("holdings")
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker))
+      .collect();
+  },
+});
+
+// Query to get holdings by position type for current user
 export const getByPositionType = query({
   args: { positionType: v.union(v.literal("long"), v.literal("short")) },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
     return await ctx.db
       .query("holdings")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
       .filter((q) => q.eq(q.field("positionType"), args.positionType))
       .collect();
   },
@@ -59,15 +89,13 @@ export const addOrUpdateHolding = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
-    // Check if holding already exists for this ticker and position type
+    const user = await getCurrentUser(ctx);
+    
+    // Check if holding already exists for this ticker and position type for this user
     const existingHolding = await ctx.db
       .query("holdings")
-      .filter((q) => 
-        q.and(
-          q.eq(q.field("ticker"), args.ticker),
-          q.eq(q.field("positionType"), args.positionType)
-        )
-      )
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker))
+      .filter((q) => q.eq(q.field("positionType"), args.positionType))
       .first();
 
     if (existingHolding) {
@@ -93,6 +121,7 @@ export const addOrUpdateHolding = mutation({
     } else {
       // Create new holding
       const holdingId = await ctx.db.insert("holdings", {
+        userId: user._id,
         ...args,
         lastUpdated: new Date().toISOString(),
       });
@@ -115,7 +144,10 @@ export const add = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
     const holdingId = await ctx.db.insert("holdings", {
+      userId: user._id,
       ...args,
       lastUpdated: new Date().toISOString(),
     });
@@ -138,7 +170,15 @@ export const update = mutation({
     notes: v.optional(v.string()),
   },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
     const { id, ...updates } = args;
+    
+    // Verify the holding belongs to the current user
+    const holding = await ctx.db.get(id);
+    if (!holding || holding.userId !== user._id) {
+      throw new Error("Holding not found or access denied");
+    }
+    
     await ctx.db.patch(id, {
       ...updates,
       lastUpdated: new Date().toISOString(),
@@ -150,6 +190,14 @@ export const update = mutation({
 export const remove = mutation({
   args: { id: v.id("holdings") },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
+    // Verify the holding belongs to the current user
+    const holding = await ctx.db.get(args.id);
+    if (!holding || holding.userId !== user._id) {
+      throw new Error("Holding not found or access denied");
+    }
+    
     await ctx.db.delete(args.id);
   },
 });
@@ -161,6 +209,14 @@ export const updateCurrentPrice = mutation({
     currentPrice: v.number(),
   },
   handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
+    // Verify the holding belongs to the current user
+    const holding = await ctx.db.get(args.id);
+    if (!holding || holding.userId !== user._id) {
+      throw new Error("Holding not found or access denied");
+    }
+    
     await ctx.db.patch(args.id, {
       currentPrice: args.currentPrice,
       lastUpdated: new Date().toISOString(),

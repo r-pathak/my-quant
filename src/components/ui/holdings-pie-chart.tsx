@@ -43,11 +43,10 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
       const value = holding.unitsHeld * currentPrice;
       
       return {
-        name: holding.ticker,
-        fullName: holding.companyName,
+        name: '$' + holding.ticker.toLowerCase(),
+        fullName: holding.companyName.toLowerCase(),
         value: Math.round(value * 100) / 100,
-        color: GLASSY_COLORS[index % GLASSY_COLORS.length],
-        sector: holding.sector || 'Unknown'
+        color: GLASSY_COLORS[index % GLASSY_COLORS.length]
       };
     }).sort((a, b) => b.value - a.value); // Sort by value descending
   }, [holdings]);
@@ -65,13 +64,10 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
           <p className="text-sm text-muted-foreground font-mono mb-2">{data.fullName}</p>
           <div className="space-y-1">
             <p className="text-sm text-foreground font-mono">
-              Value: <span className="text-primary">${data.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
+              value: <span className="text-primary">${data.value.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span>
             </p>
             <p className="text-sm text-muted-foreground font-mono">
-              Allocation: <span className="text-primary">{percentage}%</span>
-            </p>
-            <p className="text-xs text-muted-foreground font-mono">
-              Sector: {data.sector}
+              allocation: <span className="text-primary">{percentage}%</span>
             </p>
           </div>
         </div>
@@ -86,7 +82,7 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
     return (
       <div className="bg-card border border-border rounded-lg p-6 h-80 flex items-center justify-center">
         <div className="text-center">
-          <p className="text-muted-foreground font-mono">No holdings data available</p>
+          <p className="text-muted-foreground font-mono">no holdings data available</p>
           <p className="text-sm text-muted-foreground mt-1 font-mono">Add some positions to see the chart</p>
         </div>
       </div>
@@ -96,9 +92,9 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
   return (
     <div className="bg-card/50 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold text-foreground font-mono">Portfolio Allocation</h3>
+        <h3 className="text-lg font-semibold text-foreground font-mono">portfolio allocation</h3>
         <p className="text-sm text-muted-foreground font-mono">
-          Total Value: ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+          total value: ${totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
         </p>
       </div>
       
@@ -137,7 +133,7 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
       
       <div className="mt-4 text-center">
         <p className="text-xs text-muted-foreground font-mono">
-          Hover over segments for details • {chartData.length} position{chartData.length !== 1 ? 's' : ''}
+          hover over segments for details • {chartData.length} position{chartData.length !== 1 ? 's' : ''}
         </p>
       </div>
     </div>

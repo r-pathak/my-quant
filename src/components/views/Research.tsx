@@ -224,7 +224,7 @@ export function Research() {
       }
     } catch (error) {
       console.error("Error adding stock:", error);
-      alert("Failed to add stock");
+        alert("failed to add stock");
     } finally {
       setIsAddingStock(false);
     }
@@ -241,7 +241,7 @@ export function Research() {
         }
       } catch (error) {
         console.error("Error removing stock:", error);
-        alert("Failed to remove stock");
+        alert("failed to remove stock");
       }
     }
   };
@@ -395,7 +395,7 @@ export function Research() {
           <div className="p-2 border-b border-white/10 flex-shrink-0">
             <div className="flex items-center justify-between">
               <h2 className="text-sm ml-2 font-semibold text-foreground font-mono">
-                Watchlist ({researchStocks?.length || 0})
+                watchlist ({researchStocks?.length || 0})
               </h2>
               <div className="flex items-center gap-1">
                 <button
@@ -403,7 +403,7 @@ export function Research() {
                   className="flex items-center gap-1 px-2 py-1 text-xs bg-white/20 hover:bg-primary/30 rounded-lg transition-colors font-mono"
                 >
                   <IconPlus className="h-3 w-3" />
-                  Add
+                  add
                 </button>
                 <button
                   onClick={() => setShowManageStocks(!showManageStocks)}
@@ -413,7 +413,7 @@ export function Research() {
                       : 'bg-card/40 hover:bg-card/60 border border-white/20'
                   }`}
                 >
-                  {showManageStocks ? 'Done' : 'Edit'}
+                  {showManageStocks ? 'done' : 'edit'}
                 </button>
               </div>
             </div>
@@ -421,9 +421,28 @@ export function Research() {
           
           <div className="flex-1 overflow-y-auto">
             {researchStocks?.length === 0 ? (
-              <div className="text-center py-6">
-                <IconChartLine className="h-6 w-6 mx-auto mb-2 opacity-50 text-muted-foreground" />
-                <p className="text-xs text-muted-foreground font-mono">No stocks</p>
+              <div className="h-full flex flex-col items-center justify-center text-center py-8 px-4">
+                <div className="relative mb-6">
+                  {/* Animated background circles */}
+                  <div className="absolute inset-0 -m-4">
+                    <div className="w-16 h-16 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full animate-pulse"></div>
+                  </div>
+                  <div className="absolute inset-0 -m-2">
+                    <div className="w-12 h-12 bg-gradient-to-br from-purple-500/30 to-cyan-500/30 rounded-full animate-pulse delay-300"></div>
+                  </div>
+                  <IconChartLine className="h-8 w-8 mx-auto text-primary relative z-10" />
+                </div>
+                <h3 className="text-sm font-bold text-foreground font-mono mb-2">your watchlist is empty</h3>
+                <p className="text-xs text-muted-foreground font-mono mb-4 leading-relaxed">
+                  add stocks to start your<br />research journey
+                </p>
+                <button
+                  onClick={() => setShowAddStockModal(true)}
+                  className="flex items-center gap-2 px-4 py-2 text-xs bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:via-purple-500/30 hover:to-cyan-500/30 border border-blue-400/30 rounded-lg transition-all duration-300 transform hover:scale-105 font-mono shadow-lg shadow-blue-500/20"
+                >
+                  <IconPlus className="h-4 w-4" />
+                  add your first stock
+                </button>
               </div>
             ) : (
               <div className="divide-y divide-white/10">
@@ -494,18 +513,77 @@ export function Research() {
         {/* Right Content - Stock Analysis */}
         <div className="lg:col-span-4 bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl flex flex-col">
           {!selectedTicker ? (
-            <div className="h-full flex items-center justify-center">
-              <div className="text-center text-muted-foreground">
-                <IconChartLine className="h-16 w-16 mx-auto mb-4 opacity-50" />
-                <h3 className="text-xl font-bold mb-2 font-mono">Select a Stock</h3>
-                <p className="font-mono">Choose a ticker from the watchlist to view detailed research data</p>
+            <div className="h-full flex items-center justify-center p-8">
+              <div className="text-center max-w-md">
+                {researchStocks?.length === 0 ? (
+                  /* Empty watchlist state */
+                  <div className="space-y-6">
+                    <div className="relative">
+                      {/* Main icon with gradient background */}
+                      <div className="relative mx-auto w-24 h-24 mb-6">
+                        <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 via-purple-500/20 to-cyan-500/20 rounded-full"></div>
+                        <div className="absolute inset-2 bg-gradient-to-br from-purple-500/30 via-blue-500/30 to-cyan-500/30 rounded-full"></div>
+                        <IconChartLine className="h-12 w-12 absolute inset-0 m-auto text-primary z-10" />
+                      </div>
+                    </div>
+                    
+                    <div className="space-y-4">
+                      <h2 className="text-2xl font-bold text-foreground font-mono bg-gradient-to-r from-blue-400 via-purple-400 to-cyan-400 bg-clip-text text-transparent">
+                        welcome to research
+                      </h2>
+                      <p className="text-muted-foreground font-mono leading-relaxed text-sm">
+                        start building your investment research by adding stocks to your watchlist. 
+                        get comprehensive analysis, earnings summaries, and technical charts.
+                      </p>
+                      
+                      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 text-xs">
+                        <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-400/20 rounded-lg p-3 text-center">
+                          <IconSparkles className="h-5 w-5 text-blue-400 mb-2 mx-auto" />
+                          <div className="font-mono font-semibold text-blue-300">ai earnings</div>
+                          <div className="text-muted-foreground font-mono">powered by firecrawl & openai</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-purple-500/10 to-cyan-500/10 border border-purple-400/20 rounded-lg p-3 text-center">
+                          <IconChartLine className="h-5 w-5 text-purple-400 mb-2 mx-auto" />
+                          <div className="font-mono font-semibold text-purple-300">technical analysis</div>
+                          <div className="text-muted-foreground font-mono">charts & indicators</div>
+                        </div>
+                        <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-400/20 rounded-lg p-3 text-center">
+                          <IconBuilding className="h-5 w-5 text-cyan-400 mb-2 mx-auto" />
+                          <div className="font-mono font-semibold text-cyan-300">fundamentals</div>
+                          <div className="text-muted-foreground font-mono">key metrics & data</div>
+                        </div>
+                      </div>
+                      
+                      <button
+                        onClick={() => setShowAddStockModal(true)}
+                        className="inline-flex items-center gap-2 px-6 py-3 text-sm bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 hover:from-blue-500/30 hover:via-purple-500/30 hover:to-cyan-500/30 border border-blue-400/30 rounded-xl transition-all duration-300 transform hover:scale-105 font-mono shadow-lg shadow-blue-500/20 mt-4"
+                      >
+                        <IconPlus className="h-5 w-5" />
+                        add your first stock
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  /* Has stocks but none selected */
+                  <div className="text-muted-foreground space-y-4">
+                    <div className="relative mx-auto w-20 h-20 mb-4">
+                      <div className="absolute inset-0 bg-gradient-to-br from-blue-500/20 to-purple-500/20 rounded-full animate-pulse"></div>
+                      <IconChartLine className="h-10 w-10 absolute inset-0 m-auto text-primary z-10" />
+                    </div>
+                    <h3 className="text-xl font-bold mb-2 font-mono text-foreground">select a stock</h3>
+                    <p className="font-mono text-sm leading-relaxed">
+                      choose a ticker from your watchlist to view detailed research data, 
+                      ai-powered earnings summaries, and technical analysis.
+                    </p>
+                  </div>
+                )}
               </div>
             </div>
           ) : isLoadingData ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center text-muted-foreground">
                 <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
-                <p className="font-mono">Loading stock data...</p>
+                <p className="font-mono">loading stock data...</p>
               </div>
             </div>
           ) : stockData ? (
@@ -1264,7 +1342,7 @@ export function Research() {
         <div className="fixed inset-0 bg-black/90 backdrop-blur-sm flex items-center justify-center z-50">
           <div className="bg-purple-900/30 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl p-6 w-full max-w-md mx-4">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-bold text-foreground font-mono">Add Stock to Watchlist</h3>
+              <h3 className="text-lg font-bold text-foreground font-mono">add stock to watchlist</h3>
               <button
                 onClick={() => {
                   setShowAddStockModal(false);
@@ -1279,13 +1357,13 @@ export function Research() {
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-muted-foreground font-mono mb-2">
-                  Stock Ticker
+                  stock ticker
                 </label>
                 <input
                   type="text"
                   value={newTicker}
                   onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
-                  placeholder="Enter ticker (e.g., AAPL, GOOGL, TSLA)"
+                  placeholder="enter ticker (e.g., aapl, googl, tsla)"
                   className="w-full px-3 py-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent font-mono"
                   onKeyPress={(e) => e.key === 'Enter' && handleAddStock()}
                   disabled={isAddingStock}
@@ -1302,7 +1380,7 @@ export function Research() {
                   className="flex-1 px-4 py-2 text-sm bg-card/40 hover:bg-card/60 border border-white/20 rounded-lg transition-colors font-mono"
                   disabled={isAddingStock}
                 >
-                  Cancel
+                  cancel
                 </button>
                 <button
                   onClick={handleAddStock}
@@ -1312,12 +1390,12 @@ export function Research() {
                   {isAddingStock ? (
                     <>
                       <div className="animate-spin h-4 w-4 border-2 border-primary border-t-transparent rounded-full"></div>
-                      Adding...
+                      adding...
                     </>
                   ) : (
                     <>
                       <IconPlus className="h-4 w-4" />
-                      Add Stock
+                      add stock
                     </>
                   )}
                 </button>

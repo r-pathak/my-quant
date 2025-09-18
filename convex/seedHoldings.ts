@@ -1,9 +1,29 @@
 import { mutation } from "./_generated/server";
 
+// Helper function to get current user
+async function getCurrentUser(ctx: any) {
+  const identity = await ctx.auth.getUserIdentity();
+  if (!identity) {
+    throw new Error("Not authenticated");
+  }
+  
+  // In Convex Auth, the identity.subject is the user ID
+  // Extract the user ID from the subject (format: "userId|sessionId")
+  const userId = identity.subject.split('|')[0];
+  
+  const user = await ctx.db.get(userId as any);
+  if (!user) {
+    throw new Error("User not found");
+  }
+  
+  return user;
+}
+
 // Sample holdings data based on the Portfolio component
 export const seedHoldings = mutation({
   args: {},
   handler: async (ctx) => {
+    const user = await getCurrentUser(ctx);
     const sampleHoldings = [
       {
         ticker: "AAPL",
@@ -139,16 +159,20 @@ export const seedHoldings = mutation({
       },
     ];
 
-    // Clear existing holdings first
-    const existingHoldings = await ctx.db.query("holdings").collect();
+    // Clear existing holdings for this user first
+    const existingHoldings = await ctx.db
+      .query("holdings")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
     for (const holding of existingHoldings) {
       await ctx.db.delete(holding._id);
     }
 
-    // Insert sample holdings
+    // Insert sample holdings for this user
     const insertedIds = [];
     for (const holding of sampleHoldings) {
       const id = await ctx.db.insert("holdings", {
+        userId: user._id,
         ...holding,
         lastUpdated: new Date().toISOString(),
       });

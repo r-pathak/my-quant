@@ -1,12 +1,16 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
+import { authTables } from "@convex-dev/auth/server";
 
 export default defineSchema({
+  ...authTables,
   tasks: defineTable({
     text: v.string(),
     isCompleted: v.boolean(),
-  }),
+    userId: v.id("users"),
+  }).index("by_user", ["userId"]),
   holdings: defineTable({
+    userId: v.id("users"),
     ticker: v.string(),
     companyName: v.string(),
     unitsHeld: v.number(),
@@ -17,8 +21,11 @@ export default defineSchema({
     purchaseDate: v.string(),
     lastUpdated: v.optional(v.string()),
     notes: v.optional(v.string()),
-  }),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_ticker", ["userId", "ticker"]),
   researchStocks: defineTable({
+    userId: v.id("users"),
     ticker: v.string(),
     companyName: v.string(),
     currentPrice: v.optional(v.number()),
@@ -30,5 +37,7 @@ export default defineSchema({
     dividendYield: v.optional(v.number()),
     lastUpdated: v.optional(v.string()),
     addedDate: v.string(),
-  }).index("by_ticker", ["ticker"]),
+  })
+    .index("by_user", ["userId"])
+    .index("by_user_ticker", ["userId", "ticker"]),
 });

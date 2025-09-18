@@ -124,7 +124,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
       <div className=" bg-purple-900/30 border border-white/20 rounded-2xl shadow-2xl w-full max-w-md">
         <div className="p-6">
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-foreground font-mono">Add New Holding</h2>
+            <h2 className="text-xl font-semibold text-foreground font-mono">add new holding</h2>
             <button
               onClick={onClose}
               className="p-2 hover:bg-white/10 rounded-lg transition-colors"
@@ -146,13 +146,13 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
                   onChange={handleChange}
                   required
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
-                  placeholder="AAPL"
+                  placeholder="aapl"
                   maxLength={10}
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                  Position Type
+                  position type
                 </label>
                 <select
                   name="positionType"
@@ -160,15 +160,15 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
                 >
-                  <option value="long">Long</option>
-                  <option value="short">Short</option>
+                  <option value="long">long</option>
+                  <option value="short">short</option>
                 </select>
               </div>
             </div>
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                Company Name {isFetchingCompany ? "(Fetching...)" : "*"}
+                company name {isFetchingCompany ? "(fetching...)" : "*"}
               </label>
               <input
                 type="text"
@@ -218,7 +218,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                  Sector
+                  sector
                 </label>
                 <input
                   type="text"
@@ -226,12 +226,12 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
                   value={formData.sector}
                   onChange={handleChange}
                   className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
-                  placeholder="Technology"
+                  placeholder="technology"
                 />
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                  Purchase Date *
+                  purchase date *
                 </label>
                 <input
                   type="date"
@@ -246,7 +246,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
 
             <div>
               <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                Notes
+                notes
               </label>
               <textarea
                 name="notes"
@@ -264,7 +264,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
                 onClick={onClose}
                 className="flex-1 px-4 py-2 bg-white/10 hover:bg-white/20 border border-white/20 rounded-lg text-foreground font-mono transition-colors"
               >
-                Cancel
+                cancel
               </button>
               <button
                 type="submit"
@@ -274,12 +274,12 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
                 {isSubmitting ? (
                   <>
                     <div className="w-4 h-4 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                    Adding...
+                    adding...
                   </>
                 ) : (
                   <>
                     <IconPlus className="h-4 w-4" />
-                    Add Holding
+                    add holding
                   </>
                 )}
               </button>
