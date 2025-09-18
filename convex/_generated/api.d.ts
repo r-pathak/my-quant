@@ -13,10 +13,13 @@ import type {
   FilterApi,
   FunctionReference,
 } from "convex/server";
+import type * as firecrawlActions from "../firecrawlActions.js";
 import type * as holdings from "../holdings.js";
 import type * as newsActions from "../newsActions.js";
 import type * as priceActions from "../priceActions.js";
+import type * as researchActions from "../researchActions.js";
 import type * as seedHoldings from "../seedHoldings.js";
+import type * as seedResearch from "../seedResearch.js";
 import type * as tasks from "../tasks.js";
 
 /**
@@ -28,10 +31,13 @@ import type * as tasks from "../tasks.js";
  * ```
  */
 declare const fullApi: ApiFromModules<{
+  firecrawlActions: typeof firecrawlActions;
   holdings: typeof holdings;
   newsActions: typeof newsActions;
   priceActions: typeof priceActions;
+  researchActions: typeof researchActions;
   seedHoldings: typeof seedHoldings;
+  seedResearch: typeof seedResearch;
   tasks: typeof tasks;
 }>;
 export declare const api: FilterApi<

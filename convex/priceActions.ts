@@ -64,7 +64,7 @@ export const updateAllPrices = action({
     }
     
     // Extract unique tickers
-    const tickers = [...new Set(holdings.map(h => h.ticker))];
+    const tickers = [...new Set(holdings.map((h: any) => h.ticker))];
     console.log('updateAllPrices: Tickers to update:', tickers);
     
     // Fetch real-time prices for all tickers
