@@ -13,7 +13,6 @@ import {
   IconBuilding,
   IconCurrencyDollar,
   IconPercentage,
-  IconCalendarStats,
   IconTrash,
   IconRefresh,
   IconExternalLink
@@ -1560,9 +1559,9 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                                     </a>
                                   </div>
                                   
-                                  {(post.content || post.snippet) && (
+                                  {post.content && (
                                     <p className="text-xs text-muted-foreground font-mono mb-3 line-clamp-4 leading-relaxed">
-                                      {post.snippet || post.content?.toLowerCase()}
+                                      {post.content.toLowerCase()}
                                     </p>
                                   )}
                                   
