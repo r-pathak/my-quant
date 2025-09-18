@@ -43,7 +43,7 @@ interface StockData {
   };
 }
 
-export function Research() {
+export function Research({ initialTicker }: { initialTicker?: string }) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [newTicker, setNewTicker] = useState("");
   const [isAddingStock, setIsAddingStock] = useState(false);
@@ -51,7 +51,7 @@ export function Research() {
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [showManageStocks, setShowManageStocks] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
-  const [activeTab, setActiveTab] = useState<'fundamentals' | 'technicals'>('fundamentals');
+  const [activeTab, setActiveTab] = useState<'fundamentals' | 'technicals' | 'wallstreetbets'>('fundamentals');
   const [motleyFoolData, setMotleyFoolData] = useState<{
     success: boolean;
     stockData?: {
@@ -75,6 +75,81 @@ export function Research() {
   const [isLoadingMotleyFool, setIsLoadingMotleyFool] = useState(false);
   const [hasLoadedMotleyFool, setHasLoadedMotleyFool] = useState<string | null>(null);
   const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
+  
+  // WallStreetBets states
+  const [wsbData, setWsbData] = useState<{
+    posts: Array<{
+      title: string;
+      url: string;
+      author: string;
+      score: number;
+      comments: number;
+      created: string;
+      content?: string;
+    }>;
+    sentiment: {
+      overall: 'bullish' | 'bearish' | 'neutral';
+      confidence: number;
+      summary: string;
+      keyThemes: string[];
+    };
+  } | null>(null);
+  const [isLoadingWSB, setIsLoadingWSB] = useState(false);
+  
+  // Handle initial ticker from query params
+  useEffect(() => {
+    if (initialTicker && !selectedTicker) {
+      setSelectedTicker(initialTicker.toUpperCase());
+    }
+  }, [initialTicker, selectedTicker]);
+
+  // Convex hooks - must be declared before useEffect that uses them
+  const researchStocks = useQuery(api.researchActions.getAllResearchStocks);
+  const fetchAndAddStock = useAction(api.researchActions.fetchAndAddStock);
+  const removeStock = useMutation(api.researchActions.removeResearchStock);
+  const getStockData = useAction(api.researchActions.getStockResearchData);
+  const getMotleyFoolData = useAction(api.firecrawlActions.getMotleyFoolData);
+  const getChartData = useAction(api.chartActions.getChartData);
+  const fetchWallStreetBetsData = useAction(api.wallstreetbetsActions.fetchWallStreetBetsData);
+  const getCachedMotleyFoolData = useQuery(api.researchActions.getCachedMotleyFoolData, 
+    selectedTicker ? { ticker: selectedTicker } : "skip");
+  const updateMotleyFoolData = useMutation(api.researchActions.updateMotleyFoolData);
+
+  // Clear WSB data when ticker changes
+  useEffect(() => {
+    setWsbData(null);
+  }, [selectedTicker]);
+
+  // Auto-load WSB data when switching to wallstreetbets tab
+  useEffect(() => {
+    if (activeTab === 'wallstreetbets' && selectedTicker && !wsbData && !isLoadingWSB) {
+      // Wait a bit to ensure stockData is loaded for the current ticker
+      const timer = setTimeout(() => {
+        setIsLoadingWSB(true);
+        // Get company name from stock data or research stocks
+        const companyName = stockData?.companyName || 
+          researchStocks?.find(stock => stock.ticker === selectedTicker)?.companyName;
+        
+        console.log(`Loading WSB data for ${selectedTicker} (${companyName}) - stockData:`, stockData?.ticker, stockData?.companyName);
+        
+        fetchWallStreetBetsData({ 
+          ticker: selectedTicker,
+          companyName: companyName 
+        })
+          .then((result) => {
+            setWsbData(result);
+          })
+          .catch((error) => {
+            console.error('Error auto-loading WSB data:', error);
+          })
+          .finally(() => {
+            setIsLoadingWSB(false);
+          });
+      }, 500); // Wait 500ms for stock data to load
+
+      return () => clearTimeout(timer);
+    }
+  }, [activeTab, selectedTicker, wsbData, isLoadingWSB, fetchWallStreetBetsData, stockData, researchStocks]);
   
   // Technical analysis states
   const [chartData, setChartData] = useState<{
@@ -109,16 +184,9 @@ export function Research() {
   }>({
     rsi: false,
     bollinger: false,
-    sma20: true,
-    sma50: true,
+    sma20: false,
+    sma50: false,
   });
-
-  const researchStocks = useQuery(api.researchActions.getAllResearchStocks);
-  const fetchAndAddStock = useAction(api.researchActions.fetchAndAddStock);
-  const removeStock = useMutation(api.researchActions.removeResearchStock);
-  const getStockData = useAction(api.researchActions.getStockResearchData);
-  const getMotleyFoolData = useAction(api.firecrawlActions.getMotleyFoolData);
-  const getChartData = useAction(api.chartActions.getChartData);
 
   // Auto-select the most recent stock when research stocks are loaded
   useEffect(() => {
@@ -135,9 +203,8 @@ export function Research() {
   useEffect(() => {
     if (selectedTicker) {
       setIsLoadingData(true);
-      setIsLoadingMotleyFool(true);
       
-      // Load basic stock data
+      // Always fetch fresh stock data
       getStockData({ ticker: selectedTicker })
         .then((result) => {
           if (result.success && result.data) {
@@ -154,12 +221,51 @@ export function Research() {
         .finally(() => {
           setIsLoadingData(false);
         });
+    } else {
+      setStockData(null);
+      setMotleyFoolData(null);
+    }
+  }, [selectedTicker, getStockData]);
 
-      // Load Motley Fool data (only once per ticker)
-      if (hasLoadedMotleyFool !== selectedTicker) {
+  // Handle cached Motley Fool data with background updates
+  useEffect(() => {
+    if (selectedTicker && getCachedMotleyFoolData) {
+      if (getCachedMotleyFoolData.data) {
+        // Use cached data immediately
+        setMotleyFoolData(getCachedMotleyFoolData.data);
+        setHasLoadedMotleyFool(selectedTicker);
+        setIsLoadingMotleyFool(false);
+        
+        // If data needs update, fetch in background
+        if (getCachedMotleyFoolData.needsUpdate) {
+          console.log(`Motley Fool data for ${selectedTicker} is stale, updating in background...`);
+          getMotleyFoolData({ ticker: selectedTicker })
+            .then((result) => {
+              if (result.success) {
+                // Update the database with fresh data
+                const dataWithTimestamp = {
+                  ...result,
+                  lastFetched: new Date().toISOString()
+                };
+                updateMotleyFoolData({ ticker: selectedTicker, motleyFoolData: dataWithTimestamp });
+                setMotleyFoolData(result);
+              }
+            })
+            .catch((error) => {
+              console.error("Error updating Motley Fool data in background:", error);
+            });
+        }
+      } else {
+        // No cached data, fetch fresh
+        setIsLoadingMotleyFool(true);
         getMotleyFoolData({ ticker: selectedTicker })
           .then((result) => {
             if (result.success) {
+              const dataWithTimestamp = {
+                ...result,
+                lastFetched: new Date().toISOString()
+              };
+              updateMotleyFoolData({ ticker: selectedTicker, motleyFoolData: dataWithTimestamp });
               setMotleyFoolData(result);
               setHasLoadedMotleyFool(selectedTicker);
             } else {
@@ -174,15 +280,9 @@ export function Research() {
           .finally(() => {
             setIsLoadingMotleyFool(false);
           });
-      } else {
-        // Already loaded for this ticker, just stop loading state
-        setIsLoadingMotleyFool(false);
       }
-    } else {
-      setStockData(null);
-      setMotleyFoolData(null);
     }
-  }, [selectedTicker, getStockData, getMotleyFoolData, hasLoadedMotleyFool]);
+  }, [selectedTicker, getCachedMotleyFoolData, getMotleyFoolData, updateMotleyFoolData, hasLoadedMotleyFool]);
 
   // Load chart data when switching to technicals tab or changing timeframe
   useEffect(() => {
@@ -304,58 +404,58 @@ export function Research() {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
-        <div className="bg-card/90 backdrop-blur-xl border border-white/20 rounded-lg p-3 shadow-xl">
+        <div className="bg-card/98 backdrop-blur-xl border border-white/40 rounded-lg p-3 shadow-xl">
           <p className="text-xs text-muted-foreground font-mono mb-2">
             {new Date(data.timestamp).toLocaleDateString()} {new Date(data.timestamp).toLocaleTimeString()}
           </p>
           <div className="space-y-1 text-xs font-mono">
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">open:</span>
-              <span className="text-foreground">{formatCurrency(data.open)}</span>
+              <span className="text-foreground font-semibold">{formatCurrency(data.open)}</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">high:</span>
-              <span className="text-green-400">{formatCurrency(data.high)}</span>
+              <span className="text-green-400 font-semibold">{formatCurrency(data.high)}</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">low:</span>
-              <span className="text-red-400">{formatCurrency(data.low)}</span>
+              <span className="text-red-400 font-semibold">{formatCurrency(data.low)}</span>
             </div>
             <div className="flex justify-between gap-4">
               <span className="text-muted-foreground">close:</span>
-              <span className="text-foreground font-bold">{formatCurrency(data.close)}</span>
+              <span className="text-foreground font-semibold">{formatCurrency(data.close)}</span>
             </div>
             {data.volume && (
               <div className="flex justify-between gap-4 pt-1 border-t border-white/10">
                 <span className="text-muted-foreground">volume:</span>
-                <span className="text-blue-400">{(data.volume / 1000000).toFixed(1)}M</span>
+                <span className="text-white font-semibold">{(data.volume / 1000000).toFixed(1)}M</span>
               </div>
             )}
-            {/* Technical Indicators */}
-            {(data.sma20 || data.sma50 || data.rsi || data.bollingerMiddle) && (
+            {/* Technical Indicators - only show selected ones */}
+            {((indicators.sma20 && data.sma20) || (indicators.sma50 && data.sma50) || (indicators.rsi && data.rsi) || (indicators.bollinger && data.bollingerMiddle)) && (
               <div className="pt-2 border-t border-white/10 space-y-1">
-                {data.sma20 && (
+                {indicators.sma20 && data.sma20 && (
                   <div className="flex justify-between gap-4">
                     <span className="text-green-400 text-xs">sma20:</span>
-                    <span className="text-green-400 text-xs">{formatCurrency(data.sma20)}</span>
+                    <span className="text-green-400 text-xs font-semibold">{formatCurrency(data.sma20)}</span>
                   </div>
                 )}
-                {data.sma50 && (
+                {indicators.sma50 && data.sma50 && (
                   <div className="flex justify-between gap-4">
                     <span className="text-yellow-400 text-xs">sma50:</span>
-                    <span className="text-yellow-400 text-xs">{formatCurrency(data.sma50)}</span>
+                    <span className="text-yellow-400 text-xs font-semibold">{formatCurrency(data.sma50)}</span>
                   </div>
                 )}
-                {data.rsi && (
+                {indicators.rsi && data.rsi && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-blue-400 text-xs">rsi:</span>
-                    <span className="text-blue-400 text-xs">{data.rsi.toFixed(1)}</span>
+                    <span className="text-white text-xs">rsi:</span>
+                    <span className="text-white text-xs font-semibold">{data.rsi.toFixed(1)}</span>
                   </div>
                 )}
-                {data.bollingerMiddle && (
+                {indicators.bollinger && data.bollingerMiddle && (
                   <div className="flex justify-between gap-4">
-                    <span className="text-purple-400 text-xs">bb mid:</span>
-                    <span className="text-purple-400 text-xs">{formatCurrency(data.bollingerMiddle)}</span>
+                    <span className="text-blue-400 text-xs">bb mid:</span>
+                    <span className="text-blue-400 text-xs font-semibold">{formatCurrency(data.bollingerMiddle)}</span>
                   </div>
                 )}
               </div>
@@ -588,7 +688,7 @@ export function Research() {
           ) : isLoadingData ? (
             <div className="h-full flex items-center justify-center">
               <div className="text-center text-muted-foreground">
-                <div className="animate-spin h-8 w-8 border-2 border-primary border-t-transparent rounded-full mx-auto mb-4"></div>
+                <div className="animate-spin h-8 w-8 border-2 border-white border-t-transparent rounded-full mx-auto mb-4"></div>
                 <p className="font-mono">loading stock data...</p>
               </div>
             </div>
@@ -643,6 +743,21 @@ export function Research() {
                           technicals
                         </span>
                       </button>
+                      <button
+                        onClick={() => setActiveTab('wallstreetbets')}
+                        className={`px-4 py-1.5 text-xs font-mono rounded-lg transition-all duration-300 relative overflow-hidden ${
+                          activeTab === 'wallstreetbets'
+                            ? 'bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-cyan-500/20 text-white shadow-lg shadow-blue-500/20 transform scale-105 z-10'
+                            : 'text-muted-foreground hover:text-foreground hover:bg-white/10'
+                        }`}
+                      >
+                        {activeTab === 'wallstreetbets' && (
+                          <div className="absolute inset-0 bg-gradient-to-r from-blue-500/10 via-purple-500/10 to-cyan-500/10 animate-pulse" />
+                        )}
+                        <span className="relative z-10 flex items-center gap-1">
+                          r/wallstreetbets
+                        </span>
+                      </button>
                     </div>
                   </div>
                   
@@ -672,13 +787,63 @@ export function Research() {
                       </div>
                     )}
                     
-                    <button
-                      onClick={handleRefreshData}
-                      disabled={isLoadingData || isLoadingMotleyFool}
-                      className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors disabled:opacity-50"
-                    >
-                      <IconRefresh className={`h-5 w-5 ${(isLoadingData || isLoadingMotleyFool) ? 'animate-spin' : ''}`} />
-                    </button>
+                    <div className="flex items-center gap-2">
+                      {/* Add to Watchlist Button - only show if not in watchlist */}
+                      {selectedTicker && !researchStocks?.some(stock => stock.ticker === selectedTicker) && (
+                        <button
+                          onClick={async () => {
+                            if (!selectedTicker) return;
+                            setIsAddingStock(true);
+                            try {
+                              const result = await fetchAndAddStock({ ticker: selectedTicker });
+                              if (result.success) {
+                                // Stock added successfully - it will appear in the list automatically
+                              } else {
+                                alert(result.message);
+                              }
+                            } catch (error) {
+                              console.error("Error adding stock:", error);
+                              alert("Failed to add stock to watchlist");
+                            } finally {
+                              setIsAddingStock(false);
+                            }
+                          }}
+                          disabled={isAddingStock}
+                          className="flex items-center gap-1 px-3 py-1 text-xs bg-green-500/20 hover:bg-green-500/30 border border-green-500/30 rounded-lg transition-colors disabled:opacity-50 font-mono"
+                        >
+                          <IconPlus className="h-4 w-4" />
+                          {isAddingStock ? 'adding...' : 'add to watchlist'}
+                        </button>
+                      )}
+                      
+                      <button
+                        onClick={async () => {
+                          await handleRefreshData();
+                        // Also load WSB data if on that tab
+                        if (activeTab === 'wallstreetbets' && selectedTicker) {
+                          setIsLoadingWSB(true);
+                          try {
+                            const companyName = stockData?.companyName || 
+                              researchStocks?.find(stock => stock.ticker === selectedTicker)?.companyName;
+                            console.log(`Refreshing WSB data for ${selectedTicker} (${companyName})`);
+                            const result = await fetchWallStreetBetsData({ 
+                              ticker: selectedTicker,
+                              companyName: companyName 
+                            });
+                            setWsbData(result);
+                          } catch (error) {
+                            console.error('Error fetching WSB data:', error);
+                          } finally {
+                            setIsLoadingWSB(false);
+                          }
+                        }
+                        }}
+                        disabled={isLoadingData || isLoadingMotleyFool || isLoadingWSB}
+                        className="flex items-center gap-1 px-2 py-1 text-xs bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors disabled:opacity-50"
+                      >
+                        <IconRefresh className={`h-5 w-5 text-white ${(isLoadingData || isLoadingMotleyFool || isLoadingWSB) ? 'animate-spin' : ''}`} />
+                      </button>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -688,68 +853,56 @@ export function Research() {
                 {/* Fundamentals Tab Content */}
                 {activeTab === 'fundamentals' && (
                   <>
-                    {/* Performance Cards */}
-                <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
-                  {stockData.performance?.twoYear !== null && stockData.performance?.twoYear !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconChartLine className={`h-5 w-5 ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">2y performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.twoYear)}
-                      </div>
+                  {/* Performance Overview */}
+                  <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-6 shadow-2xl">
+                    <h3 className="text-base font-bold text-foreground font-mono mb-4">performance overview</h3>
+                    <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
+                      {stockData.performance?.twoYear !== null && stockData.performance?.twoYear !== undefined && (
+                        <div className="text-center">
+                          <div className="text-xs text-muted-foreground font-mono mb-1">2y</div>
+                          <div className={`text-lg font-bold font-mono ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {stockData.performance.twoYear >= 0 ? '+' : ''}{stockData.performance.twoYear.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+
+                      {stockData.performance?.oneYear !== null && stockData.performance?.oneYear !== undefined && (
+                        <div className="text-center">
+                          <div className="text-xs text-muted-foreground font-mono mb-1">1y</div>
+                          <div className={`text-lg font-bold font-mono ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {stockData.performance.oneYear >= 0 ? '+' : ''}{stockData.performance.oneYear.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+
+                      {stockData.performance?.ytd !== null && stockData.performance?.ytd !== undefined && (
+                        <div className="text-center">
+                          <div className="text-xs text-muted-foreground font-mono mb-1">ytd</div>
+                          <div className={`text-lg font-bold font-mono ${stockData.performance.ytd >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {stockData.performance.ytd >= 0 ? '+' : ''}{stockData.performance.ytd.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+
+                      {stockData.performance?.threeMonth !== null && stockData.performance?.threeMonth !== undefined && (
+                        <div className="text-center">
+                          <div className="text-xs text-muted-foreground font-mono mb-1">3m</div>
+                          <div className={`text-lg font-bold font-mono ${stockData.performance.threeMonth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {stockData.performance.threeMonth >= 0 ? '+' : ''}{stockData.performance.threeMonth.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
+
+                      {stockData.performance?.oneMonth !== null && stockData.performance?.oneMonth !== undefined && (
+                        <div className="text-center">
+                          <div className="text-xs text-muted-foreground font-mono mb-1">1m</div>
+                          <div className={`text-lg font-bold font-mono ${stockData.performance.oneMonth >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                            {stockData.performance.oneMonth >= 0 ? '+' : ''}{stockData.performance.oneMonth.toFixed(1)}%
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                  
-                  {stockData.performance?.oneYear !== null && stockData.performance?.oneYear !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconTrendingUp className={`h-5 w-5 ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">1y performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.oneYear)}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stockData.performance?.ytd !== null && stockData.performance?.ytd !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconTrendingUp className={`h-5 w-5 ${stockData.performance.ytd >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">ytd performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.ytd)}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stockData.performance?.threeMonth !== null && stockData.performance?.threeMonth !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconChartLine className={`h-5 w-5 ${stockData.performance.threeMonth >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">3m performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.threeMonth)}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stockData.performance?.oneMonth !== null && stockData.performance?.oneMonth !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconCalendarStats className={`h-5 w-5 ${stockData.performance.oneMonth >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">1m performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.oneMonth)}
-                      </div>
-                    </div>
-                  )}
-                </div>
+                  </div>
 
                 {/* Comprehensive Market Analysis Section */}
                 {isLoadingMotleyFool ? (
@@ -889,14 +1042,16 @@ export function Research() {
                     {/* Latest Earnings - AI Summary */}
                     {motleyFoolData?.latestEarnings && (
                       <div className="bg-gradient-to-br from-purple-500/10 via-blue-500/10 to-cyan-500/10 backdrop-blur-xl border border-purple-300/30 rounded-2xl p-6 shadow-2xl relative overflow-hidden">
-                        {/* AI Sparkle Background Effect */}
-                        <div className="absolute top-2 right-2 opacity-20">
-                          <div className="flex items-center gap-1">
-                            <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
-                            <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-100"></div>
-                            <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse delay-200"></div>
+                        {/* AI Sparkle Background Effect - only show when loading */}
+                        {isLoadingMotleyFool && (
+                          <div className="absolute top-2 right-2 opacity-20">
+                            <div className="flex items-center gap-1">
+                              <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse"></div>
+                              <div className="w-1 h-1 bg-blue-400 rounded-full animate-pulse delay-100"></div>
+                              <div className="w-1.5 h-1.5 bg-cyan-400 rounded-full animate-pulse delay-200"></div>
+                            </div>
                           </div>
-                        </div>
+                        )}
                         
                         <div className="flex items-center justify-between mb-4">
                           <div className="flex items-center gap-3">
@@ -917,7 +1072,7 @@ export function Research() {
                             className="flex items-center gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-300/30 rounded-xl transition-all duration-300 transform hover:scale-105"
                           >
                             <IconExternalLink className="h-4 w-4" />
-                            <span className="font-mono">read full transcript</span>
+                            <span className="font-mono">full transcript</span>
                           </a>
                         </div>
                         
@@ -1129,10 +1284,10 @@ export function Research() {
                                       <Line 
                                         type="monotone" 
                                         dataKey="close" 
-                                        stroke="#3b82f6" 
+                                        stroke="rgba(255, 255, 255, 0.8)" 
                                         strokeWidth={2}
                                         dot={false}
-                                        activeDot={{ r: 4, fill: '#3b82f6' }}
+                                        activeDot={{ r: 4, fill: 'rgba(255, 255, 255, 0.8)' }}
                                       />
                                       
                                       {/* SMA 20 */}
@@ -1167,7 +1322,7 @@ export function Research() {
                                           <Line 
                                             type="monotone" 
                                             dataKey="bollingerUpper" 
-                                            stroke="rgba(255,255,255,0.6)" 
+                                            stroke="#3b82f6" 
                                             strokeWidth={1}
                                             strokeDasharray="2 2"
                                             dot={false}
@@ -1176,7 +1331,7 @@ export function Research() {
                                           <Line 
                                             type="monotone" 
                                             dataKey="bollingerMiddle" 
-                                            stroke="rgba(255,255,255,0.6)" 
+                                            stroke="#3b82f6" 
                                             strokeWidth={1}
                                             strokeDasharray="2 2"
                                             dot={false}
@@ -1185,7 +1340,7 @@ export function Research() {
                                           <Line 
                                             type="monotone" 
                                             dataKey="bollingerLower" 
-                                            stroke="rgba(255,255,255,0.6)" 
+                                            stroke="#3b82f6" 
                                             strokeWidth={1}
                                             strokeDasharray="2 2"
                                             dot={false}
@@ -1301,6 +1456,155 @@ export function Research() {
                       </div>
                     </div>
 
+                  </>
+                )}
+
+                {/* WallStreetBets Tab Content */}
+                {activeTab === 'wallstreetbets' && (
+                  <>
+                    {isLoadingWSB ? (
+                      <div className="space-y-4">
+                        <div className="bg-gradient-to-br from-red-500/10 via-orange-500/10 to-yellow-500/10 backdrop-blur-xl border border-red-300/30 rounded-xl p-6 shadow-2xl relative overflow-hidden">
+                          <div className="absolute inset-0 bg-gradient-to-r from-red-500/5 via-orange-500/5 to-yellow-500/5 animate-pulse"></div>
+                          <div className="relative z-10">
+                            <div className="flex items-center gap-3 mb-4">
+                              <div className="relative">
+                                <div className="w-8 h-8 border-3 border-red-400/30 border-t-red-400 rounded-full animate-spin"></div>
+                                <div className="absolute inset-0 w-8 h-8 border-3 border-orange-400/20 border-r-orange-400 rounded-full animate-spin animate-reverse"></div>
+                              </div>
+                              <div>
+                                <h3 className="text-base font-bold text-foreground font-mono">scraping r/wallstreetbets</h3>
+                                <div className="text-xs text-red-300 font-mono">powered by firecrawl 🔥 & openai 🧠</div>
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ) : wsbData ? (
+                      <div className="space-y-6">
+                        {/* Sentiment Analysis */}
+                        <div className="bg-gradient-to-br from-red-500/10 via-orange-500/10 to-yellow-500/10 backdrop-blur-xl border border-red-300/30 rounded-xl p-6 shadow-2xl">
+                          <h3 className="text-lg font-bold text-foreground font-mono mb-4 flex items-center gap-2">
+                            <span>🚀</span> r/wallstreetbets sentiment analysis
+                          </h3>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground font-mono mb-1">overall sentiment</div>
+                              <div className={`text-lg font-bold font-mono ${
+                                wsbData.sentiment.overall === 'bullish' ? 'text-green-400' : 
+                                wsbData.sentiment.overall === 'bearish' ? 'text-red-400' : 'text-yellow-400'
+                              }`}>
+                                {wsbData.sentiment.overall}
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground font-mono mb-1">confidence</div>
+                              <div className="text-lg font-bold font-mono text-blue-400">
+                                {wsbData.sentiment.confidence}%
+                              </div>
+                            </div>
+                            <div className="text-center">
+                              <div className="text-xs text-muted-foreground font-mono mb-1">posts analyzed</div>
+                              <div className="text-lg font-bold font-mono text-purple-400">
+                                {wsbData.posts.length}
+                              </div>
+                            </div>
+                          </div>
+                          
+                          <div className="mb-4">
+                            <div className="text-sm text-muted-foreground font-mono mb-2">summary</div>
+                            <p className="text-sm text-foreground font-mono leading-relaxed">
+                              {wsbData.sentiment.summary.toLowerCase()}
+                            </p>
+                          </div>
+                          
+                          {wsbData.sentiment.keyThemes.length > 0 && (
+                            <div>
+                              <div className="text-sm text-muted-foreground font-mono mb-2">key themes</div>
+                              <div className="flex flex-wrap gap-2">
+                                {wsbData.sentiment.keyThemes.map((theme, index) => (
+                                  <span 
+                                    key={index}
+                                    className="px-3 py-1 bg-white/10 border border-white/20 rounded-full text-xs font-mono"
+                                  >
+                                    {theme}
+                                  </span>
+                                ))}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                        
+                        {/* Posts */}
+                        <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-xl shadow-2xl">
+                          <div className="p-4 border-b border-white/10">
+                            <h3 className="text-lg font-bold text-foreground font-mono">recent posts</h3>
+                          </div>
+                          <div className="p-4 space-y-4 max-h-96 overflow-y-auto">
+                            {wsbData.posts.length > 0 ? (
+                              wsbData.posts.map((post, index) => (
+                                <div key={index} className="border border-white/10 rounded-lg p-4 hover:bg-white/5 transition-colors">
+                                  <div className="flex items-start justify-between mb-3">
+                                    <h4 className="text-sm font-bold text-foreground font-mono line-clamp-2 flex-1 leading-relaxed">
+                                      {post.title.toLowerCase()}
+                                    </h4>
+                                    <a
+                                      href={post.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="ml-2 p-1 hover:bg-white/10 rounded transition-colors flex-shrink-0"
+                                      title="Open on Reddit"
+                                    >
+                                      <IconExternalLink className="h-4 w-4 text-muted-foreground" />
+                                    </a>
+                                  </div>
+                                  
+                                  {(post.content || post.snippet) && (
+                                    <p className="text-xs text-muted-foreground font-mono mb-3 line-clamp-4 leading-relaxed">
+                                      {post.snippet || post.content?.toLowerCase()}
+                                    </p>
+                                  )}
+                                  
+                                  
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-8">
+                                <p className="text-muted-foreground font-mono">no posts found for {selectedTicker}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="text-center py-8">
+                        <p className="text-muted-foreground font-mono mb-4">click refresh to load wallstreetbets data</p>
+                        <button
+                          onClick={async () => {
+                            if (!selectedTicker) return;
+                            setIsLoadingWSB(true);
+                            try {
+                              const companyName = stockData?.companyName || 
+                                researchStocks?.find(stock => stock.ticker === selectedTicker)?.companyName;
+                              console.log(`Manual loading WSB data for ${selectedTicker} (${companyName})`);
+                              const result = await fetchWallStreetBetsData({ 
+                                ticker: selectedTicker,
+                                companyName: companyName 
+                              });
+                              setWsbData(result);
+                            } catch (error) {
+                              console.error('Error fetching WSB data:', error);
+                            } finally {
+                              setIsLoadingWSB(false);
+                            }
+                          }}
+                          className="px-4 py-2 bg-primary/20 hover:bg-primary/30 border border-primary/30 rounded-lg transition-colors font-mono text-sm"
+                        >
+                          load wsb data
+                        </button>
+                      </div>
+                    )}
                   </>
                 )}
 

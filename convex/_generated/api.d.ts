@@ -20,6 +20,7 @@ import type * as seedHoldings from "../seedHoldings.js";
 import type * as seedResearch from "../seedResearch.js";
 import type * as tasks from "../tasks.js";
 import type * as users from "../users.js";
+import type * as wallstreetbetsActions from "../wallstreetbetsActions.js";
 
 import type {
   ApiFromModules,
@@ -48,6 +49,7 @@ declare const fullApi: ApiFromModules<{
   seedResearch: typeof seedResearch;
   tasks: typeof tasks;
   users: typeof users;
+  wallstreetbetsActions: typeof wallstreetbetsActions;
 }>;
 declare const fullApiWithMounts: typeof fullApi;
 

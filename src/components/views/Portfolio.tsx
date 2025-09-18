@@ -137,15 +137,6 @@ export default function Portfolio() {
   };
   return (
     <div className="flex flex-col h-full space-y-8 relative">
-      {/* Loading overlay */}
-      {isUpdatingPrices && (
-        <div className="fixed inset-0 bg-background/80 backdrop-blur-md z-50 flex items-center justify-center rounded-3xl">
-          <div className="bg-card/90 backdrop-blur-xl border border-white/20 rounded-2xl p-6 flex items-center gap-4 shadow-2xl">
-            <IconRefresh className="h-6 w-6 animate-spin text-primary" />
-            <span className="text-base text-foreground font-mono font-medium">updating prices...</span>
-          </div>
-        </div>
-      )}
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -196,7 +187,7 @@ export default function Portfolio() {
             disabled={isUpdatingPrices}
             className="flex h-10 cursor-pointer items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
           >
-            <IconRefresh className={`h-4 w-4 ${isUpdatingPrices ? 'animate-spin' : ''}`} />
+            <IconRefresh className={`h-4 w-4 text-white ${isUpdatingPrices ? 'animate-spin' : ''}`} />
           </button>
 
           {/* <button
@@ -330,7 +321,7 @@ export default function Portfolio() {
                   return (
                     <div
                       key={holding._id}
-                      onClick={() => window.location.href = `/stock?ticker=${holding.ticker}`}
+                      onClick={() => window.location.href = `/research?ticker=${holding.ticker}`}
                       className="p-4 hover:bg-white/5 transition-all duration-200 cursor-pointer group relative"
                     >
                       {/* Mobile Layout */}

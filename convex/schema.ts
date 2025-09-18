@@ -37,6 +37,33 @@ export default defineSchema({
     dividendYield: v.optional(v.number()),
     lastUpdated: v.optional(v.string()),
     addedDate: v.string(),
+    // Motley Fool data
+    motleyFoolData: v.optional(v.object({
+      success: v.boolean(),
+      stockData: v.optional(v.object({
+        pe_ratio: v.optional(v.string()),
+        market_cap: v.optional(v.string()),
+        dividend_yield: v.optional(v.string()),
+        sector: v.optional(v.string()),
+        fifty_two_week_high: v.optional(v.string()),
+        fifty_two_week_low: v.optional(v.string()),
+        description: v.optional(v.string()),
+        company_name: v.optional(v.string()),
+        current_price: v.optional(v.string()),
+        price_change: v.optional(v.string()),
+        price_change_percent: v.optional(v.string()),
+        volume: v.optional(v.string()),
+      })),
+      latestEarnings: v.optional(v.object({
+        title: v.string(),
+        date: v.string(),
+        period: v.string(),
+        summary: v.string(),
+        url: v.string(),
+      })),
+      lastFetched: v.string(),
+      errors: v.optional(v.array(v.string())),
+    })),
   })
     .index("by_user", ["userId"])
     .index("by_user_ticker", ["userId", "ticker"]),

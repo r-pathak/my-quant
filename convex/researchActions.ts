@@ -322,3 +322,81 @@ export const updateAllResearchPrices = action({
     return { message: `Updated ${updatedCount} of ${stocks.length} research stocks` };
   },
 });
+
+// Function to update Motley Fool data for a research stock
+export const updateMotleyFoolData = mutation({
+  args: { 
+    ticker: v.string(),
+    motleyFoolData: v.object({
+      success: v.boolean(),
+      stockData: v.optional(v.object({
+        pe_ratio: v.optional(v.string()),
+        market_cap: v.optional(v.string()),
+        dividend_yield: v.optional(v.string()),
+        sector: v.optional(v.string()),
+        fifty_two_week_high: v.optional(v.string()),
+        fifty_two_week_low: v.optional(v.string()),
+        description: v.optional(v.string()),
+        company_name: v.optional(v.string()),
+        current_price: v.optional(v.string()),
+        price_change: v.optional(v.string()),
+        price_change_percent: v.optional(v.string()),
+        volume: v.optional(v.string()),
+      })),
+      latestEarnings: v.optional(v.object({
+        title: v.string(),
+        date: v.string(),
+        period: v.string(),
+        summary: v.string(),
+        url: v.string(),
+      })),
+      lastFetched: v.string(),
+      errors: v.optional(v.array(v.string())),
+    })
+  },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
+    // Find the research stock
+    const existingStock = await ctx.db
+      .query("researchStocks")
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker))
+      .first();
+
+    if (existingStock) {
+      await ctx.db.patch(existingStock._id, {
+        motleyFoolData: args.motleyFoolData
+      });
+      return { success: true };
+    }
+    
+    return { success: false, message: "Stock not found in research list" };
+  },
+});
+
+// Function to get cached Motley Fool data
+export const getCachedMotleyFoolData = query({
+  args: { ticker: v.string() },
+  handler: async (ctx, args) => {
+    const user = await getCurrentUser(ctx);
+    
+    const stock = await ctx.db
+      .query("researchStocks")
+      .withIndex("by_user_ticker", (q) => q.eq("userId", user._id).eq("ticker", args.ticker))
+      .first();
+
+    if (stock?.motleyFoolData) {
+      // Check if data is less than 24 hours old
+      const lastFetched = new Date(stock.motleyFoolData.lastFetched);
+      const now = new Date();
+      const hoursSinceUpdate = (now.getTime() - lastFetched.getTime()) / (1000 * 60 * 60);
+      
+      return {
+        data: stock.motleyFoolData,
+        needsUpdate: hoursSinceUpdate > 24 // Update if older than 24 hours
+      };
+    }
+    
+    return { data: null, needsUpdate: true };
+  },
+});

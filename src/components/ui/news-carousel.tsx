@@ -118,9 +118,9 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
   return (
     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl shadow-2xl flex flex-col h-full">
       {/* Header */}
-      <div className="p-6 border-b border-white/10 flex-shrink-0">
+      <div className="p-3 border-b border-white/10 flex-shrink-0">
         <div className="flex items-center justify-between">
-          <h2 className="text-xl font-semibold text-foreground font-mono flex items-center gap-2">
+          <h2 className="text-lg font-semibold text-foreground font-mono flex items-center gap-2">
             news (powered by firecrawl 🔥)
           </h2>
           <button
@@ -145,16 +145,16 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
         {isLoading ? (
           <div className="flex-1 flex items-center justify-center">
             <div className="text-center">
-              <IconRefresh className="h-8 w-8 text-primary animate-spin mx-auto mb-4" />
+              <IconRefresh className="h-8 w-8 text-white animate-spin mx-auto mb-4" />
               <p className="text-muted-foreground font-mono">Fetching latest news...</p>
             </div>
           </div>
         ) : news.length > 0 ? (
           <>
             {/* News Item */}
-            <div className="flex-1 flex flex-col relative">
+            <div className="flex-1 -mt-2 flex flex-col relative">
               {/* Animated background gradient */}
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-green-500/5 rounded-xl opacity-50"></div>
+              {/* <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-transparent to-green-500/5 rounded-xl opacity-50"></div> */}
               
               <div className="relative z-10 mb-4">
                 {/* Breaking news indicator */}
@@ -183,8 +183,8 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                 
                 {news[currentIndex].summary && (
                   <div className="relative">
-                    <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b from-primary/60 to-green-500/60 rounded-full"></div>
-                    <p className="text-sm text-muted-foreground font-mono line-clamp-4 pl-4 leading-relaxed">
+                    {/* <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b  rounded-full"></div> */}
+                    <p className="text-sm text-muted-foreground font-mono line-clamp-4 leading-relaxed">
                       {news[currentIndex].summary.toLowerCase()}
                     </p>
                   </div>
@@ -196,10 +196,10 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                   href={news[currentIndex].url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="group inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 to-green-500/20 hover:from-primary/30 hover:to-green-500/30 px-4 py-2 rounded-lg transition-all duration-300 font-mono text-sm border border-white/10 hover:border-white/20"
+                  className="flex items-center w-52 gap-2 px-3 py-2 text-sm bg-gradient-to-r from-purple-500/20 to-blue-500/20 hover:from-purple-500/30 hover:to-blue-500/30 border border-purple-300/30 rounded-xl transition-all duration-300 transform hover:scale-105"
                 >
-                  <span className="text-white group-hover:text-white/90">full article</span>
-                  <IconExternalLink className="h-4 w-4 text-white/70 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
+                  <IconExternalLink className="h-4 w-4" />
+                  <span className="font-mono">read full article</span>
                 </a>
               </div>
             </div>
