@@ -184,7 +184,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                 {news[currentIndex].summary && (
                   <div className="relative">
                     {/* <div className="absolute -left-2 top-0 w-1 h-full bg-gradient-to-b  rounded-full"></div> */}
-                    <p className="text-sm text-muted-foreground font-mono line-clamp-4 leading-relaxed">
+                    <p className="text-sm text-muted-foreground font-mono line-clamp-3 leading-relaxed">
                       {news[currentIndex].summary.toLowerCase()}
                     </p>
                   </div>
