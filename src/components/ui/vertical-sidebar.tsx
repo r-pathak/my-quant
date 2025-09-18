@@ -174,7 +174,7 @@ function VerticalIconContainer({
               initial={{ opacity: 0, x: 10, y: "-50%" }}
               animate={{ opacity: 1, x: 0, y: "-50%" }}
               exit={{ opacity: 0, x: 2, y: "-50%" }}
-              className="absolute font-mono left-full top-1/2 ml-2 w-fit rounded-md border border-gray-600 bg-black px-2 py-0.5 text-sm whitespace-pre text-white  z-[999999]"
+              className="absolute font-mono left-full top-1/2 ml-2 w-fit rounded-xl bg-gradient-to-r bg-white/10 backdrop-blur-xl border border-white/20 px-3 py-1.5 text-sm whitespace-pre text-white font-medium shadow-2xl shadow-purple-500/30 z-[999999]"
             >
               {title}
             </motion.div>

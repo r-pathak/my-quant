@@ -173,7 +173,7 @@ export default function Portfolio() {
               alert('myquant Update: Agent call feature coming soon! 📞');
             }}
             borderRadius="0.5rem"
-            className="bg-gradient-to-r from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
+            className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
             borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
             duration={4000}
           >
@@ -185,7 +185,7 @@ export default function Portfolio() {
           
           <button
             onClick={() => setIsAddFormOpen(true)}
-            className="flex h-10 items-center gap-2 px-3 py-2 bg-primary/20 hover:bg-primary/30 border border-white/40 rounded-lg transition-colors"
+            className="flex h-10 cursor-pointer items-center gap-2 px-3 py-2 bg-primary/20 hover:bg-primary/30 border border-white/40 rounded-lg transition-colors"
           >
             <IconPlus className="h-4 w-4" />
             <span className="text-sm font-mono">add holding</span>
@@ -194,7 +194,7 @@ export default function Portfolio() {
           <button
             onClick={handleRefreshPrices}
             disabled={isUpdatingPrices}
-            className="flex h-10 items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
+            className="flex h-10 cursor-pointer items-center gap-2 px-3 py-2 bg-primary/10 hover:bg-primary/20 rounded-lg transition-colors disabled:opacity-50"
           >
             <IconRefresh className={`h-4 w-4 ${isUpdatingPrices ? 'animate-spin' : ''}`} />
           </button>
@@ -292,8 +292,8 @@ export default function Portfolio() {
             </div>
             <div className="flex items-center gap-1 mt-1">
               <IconPercentage className={`h-3 w-3 ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-              <span className={`text-xs font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`All-Time Return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
-                {allTimePnLPercentage >= 0 ? '+' : ''}{allTimePnLPercentage.toFixed(1)}% all-time
+              <span className={`text-xs font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`unrealized return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
+                {allTimePnLPercentage >= 0 ? '+' : ''}{allTimePnLPercentage.toFixed(1)}% 
               </span>
             </div>
           </div>

@@ -476,12 +476,12 @@ export function Research() {
                           }`}>
                             <span className={`font-bold text-xs font-mono ${
                               selectedTicker === stock.ticker ? 'text-white' : 'text-primary'
-                            }`}>{stock.ticker.slice(0, 2)}</span>
+                            }`}>{stock.ticker.slice(0, 2).toLowerCase()}</span>
                           </div>
                           <div className="flex-1 min-w-0">
                             <h3 className={`text-xs font-mono truncate font-semibold transition-colors duration-300 ${
                               selectedTicker === stock.ticker ? 'text-white' : 'text-foreground'
-                            }`}>{stock.ticker}</h3>
+                            }`}>{stock.ticker.toLowerCase()}</h3>
                             {stock.currentPrice && (
                               <p className={`text-xs font-mono transition-colors duration-300 ${
                                 selectedTicker === stock.ticker ? 'text-blue-200' : 'text-primary'

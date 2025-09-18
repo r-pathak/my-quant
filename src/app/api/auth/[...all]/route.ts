@@ -1,4 +1,4 @@
-import { convexAuthNextjsHandler } from "@convex-dev/auth/nextjs/server";
+import { convexAuthNextjsMiddleware } from "@convex-dev/auth/nextjs/server";
 
-export const { GET, POST } = convexAuthNextjsHandler();
+export const { GET, POST } = convexAuthNextjsMiddleware();
 
