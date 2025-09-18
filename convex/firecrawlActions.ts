@@ -2,6 +2,55 @@ import { action } from "./_generated/server";
 import { api } from "./_generated/api";
 import { v } from "convex/values";
 
+// Helper function to handle retries with exponential backoff for rate limits
+async function retryFirecrawlRequest(
+  requestFn: () => Promise<Response>,
+  maxRetries: number = 3,
+  baseDelay: number = 3000 // 3 seconds as suggested by Firecrawl
+): Promise<Response> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      const response = await requestFn();
+      
+      // If it's a rate limit error (429), retry with delay
+      if (response.status === 429 && attempt < maxRetries) {
+        const errorText = await response.text();
+        console.log(`Rate limit hit (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${baseDelay * Math.pow(2, attempt)}ms...`);
+        
+        // Parse the error to get reset time if available
+        let waitTime = baseDelay * Math.pow(2, attempt); // Exponential backoff
+        try {
+          const errorData = JSON.parse(errorText);
+          if (errorData.error && errorData.error.includes('retry after')) {
+            // Extract retry time from error message if available
+            const retryMatch = errorData.error.match(/retry after (\d+)s/);
+            if (retryMatch) {
+              waitTime = Math.max(waitTime, parseInt(retryMatch[1]) * 1000);
+            }
+          }
+        } catch (parseError) {
+          // If we can't parse the error, use exponential backoff
+        }
+        
+        await new Promise(resolve => setTimeout(resolve, waitTime));
+        continue;
+      }
+      
+      return response;
+    } catch (error) {
+      lastError = error instanceof Error ? error : new Error(String(error));
+      if (attempt < maxRetries) {
+        console.log(`Request failed (attempt ${attempt + 1}/${maxRetries + 1}), retrying in ${baseDelay * Math.pow(2, attempt)}ms...`);
+        await new Promise(resolve => setTimeout(resolve, baseDelay * Math.pow(2, attempt)));
+      }
+    }
+  }
+  
+  throw lastError || new Error('Max retries exceeded');
+}
+
 // Define the schema for Motley Fool stock data
 const motleyFoolStockSchema = {
   type: "object",
@@ -102,22 +151,24 @@ async function scrapeMotleyFoolData(ticker: string) {
     const url = `https://www.fool.com/quote/${exchange}/${ticker.toLowerCase()}`;
     console.log(`Scraping Motley Fool data for ${ticker} from: ${url}`);
 
-    const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: url,
-        formats: [{
-          type: "json",
-          schema: motleyFoolStockSchema
-        }],
-        onlyMainContent: true,
-        waitFor: 3000
+    const response = await retryFirecrawlRequest(() => 
+      fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: url,
+          formats: [{
+            type: "json",
+            schema: motleyFoolStockSchema
+          }],
+          onlyMainContent: true,
+          waitFor: 3000
+        })
       })
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -166,22 +217,24 @@ async function scrapeMotleyFoolEarningsTranscripts(ticker: string, exchange: str
     const url = `https://www.fool.com/quote/${exchange}/${ticker.toLowerCase()}/#quote-earnings-transcripts`;
     console.log(`Scraping Motley Fool earnings transcripts for ${ticker} from: ${url}`);
 
-    const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: url,
-        formats: [{
-          type: "json",
-          schema: earningsTranscriptsSchema
-        }],
-        onlyMainContent: true,
-        waitFor: 3000
+    const response = await retryFirecrawlRequest(() =>
+      fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: url,
+          formats: [{
+            type: "json",
+            schema: earningsTranscriptsSchema
+          }],
+          onlyMainContent: true,
+          waitFor: 3000
+        })
       })
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
@@ -226,19 +279,21 @@ async function scrapeEarningsTranscript(transcriptUrl: string) {
 
     console.log(`Scraping earnings transcript from: ${transcriptUrl}`);
 
-    const response = await fetch('https://api.firecrawl.dev/v2/scrape', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        url: transcriptUrl,
-        formats: ["markdown"],
-        onlyMainContent: true,
-        waitFor: 3000
+    const response = await retryFirecrawlRequest(() =>
+      fetch('https://api.firecrawl.dev/v2/scrape', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          url: transcriptUrl,
+          formats: ["markdown"],
+          onlyMainContent: true,
+          waitFor: 3000
+        })
       })
-    });
+    );
 
     if (!response.ok) {
       const errorText = await response.text();
