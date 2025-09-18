@@ -12,6 +12,34 @@ interface NewsItem {
   summary?: string;
 }
 
+// Helper function for retry logic with exponential backoff
+async function retryWithBackoff<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  baseDelay: number = 1000
+): Promise<T> {
+  let lastError: Error;
+  
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await operation();
+    } catch (error) {
+      lastError = error as Error;
+      
+      if (attempt === maxRetries) {
+        throw lastError;
+      }
+      
+      // Exponential backoff: 1s, 2s, 4s
+      const delay = baseDelay * Math.pow(2, attempt);
+      console.log(`Attempt ${attempt + 1} failed, retrying in ${delay}ms...`);
+      await new Promise(resolve => setTimeout(resolve, delay));
+    }
+  }
+  
+  throw lastError!;
+}
+
 export const fetchTopHoldingsNews = action({
   args: { 
     holdings: v.array(v.object({
@@ -31,15 +59,17 @@ export const fetchTopHoldingsNews = action({
         if (allNews.length >= 5) break;
         
         try {
-          // Search for news using ticker and company name
+          // Search for news using ticker and company name with retry logic
           const searchQuery = `${holding.ticker} ${holding.companyName}`;
           console.log(`Searching for: ${searchQuery}`);
           
-          const results = await firecrawl.search(searchQuery, {
-            tbs: 'qdr:d', // Past day
-            sources: ['news'],
-            limit: 1 // Get 1 article per holding to ensure we don't exceed 5 total
-          });
+          const results = await retryWithBackoff(async () => {
+            return await firecrawl.search(searchQuery, {
+              tbs: 'qdr:d', // Past day
+              sources: ['news'],
+              limit: 1 // Get 1 article per holding to ensure we don't exceed 5 total
+            });
+          }, 3, 1000);
 
           console.log(`Firecrawl results for ${holding.ticker}:`, JSON.stringify(results, null, 2));
 
@@ -63,7 +93,8 @@ export const fetchTopHoldingsNews = action({
             }
           }
         } catch (tickerError) {
-          console.error(`Error fetching news for ${holding.ticker}:`, tickerError);
+          console.error(`Error fetching news for ${holding.ticker} after retries:`, tickerError);
+          // Continue with next holding instead of failing completely
         }
       }
 
@@ -72,7 +103,7 @@ export const fetchTopHoldingsNews = action({
 
     } catch (error) {
       console.error('Error in fetchTopHoldingsNews:', error);
-      return []; // Return empty array - no mock data
+      throw new Error(`Failed to fetch news: ${error instanceof Error ? error.message : 'Unknown error'}`);
     }
   },
 });

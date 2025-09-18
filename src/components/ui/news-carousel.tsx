@@ -29,10 +29,25 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   const [hasLoadedNews, setHasLoadedNews] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [lastRefreshTime, setLastRefreshTime] = useState<number>(0);
   const fetchNews = useAction(api.newsActions.fetchTopHoldingsNews);
 
-  const loadNews = useCallback(async () => {
+  const loadNews = useCallback(async (force: boolean = false) => {
+    // Rate limiting: prevent calls within 30 seconds unless forced
+    const now = Date.now();
+    const RATE_LIMIT_MS = 30000; // 30 seconds
+    
+    if (!force && (now - lastRefreshTime) < RATE_LIMIT_MS) {
+      const remainingTime = Math.ceil((RATE_LIMIT_MS - (now - lastRefreshTime)) / 1000);
+      setError(`Please wait ${remainingTime} seconds before refreshing again`);
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     setIsLoading(true);
+    setError(null);
+    
     try {
       // Sort holdings by total value and take top 5 on client-side
       const topHoldings = holdings
@@ -45,18 +60,25 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
       
       const newsData = await fetchNews({ holdings: topHoldings });
       setNews(newsData);
-      setHasLoadedNews(true); // Mark as loaded
+      setHasLoadedNews(true);
+      setLastRefreshTime(now);
+      
+      if (newsData.length === 0) {
+        setError('No news found for your holdings. Try again later.');
+      }
     } catch (error) {
       console.error('Error fetching news:', error);
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch news';
+      setError(errorMessage);
     } finally {
       setIsLoading(false);
     }
-  }, [holdings, fetchNews]);
+  }, [holdings, fetchNews, lastRefreshTime]);
 
   // Load news only once when holdings are first available
   useEffect(() => {
     if (holdings.length > 0 && !hasLoadedNews) {
-      loadNews();
+      loadNews(true); // Force initial load
     }
   }, [holdings, hasLoadedNews, loadNews]);
 
@@ -71,7 +93,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
   }, [news.length]);
 
   const handleRefresh = () => {
-    loadNews();
+    loadNews(false); // Respect rate limiting
   };
 
   const handleNext = () => {
@@ -105,10 +127,17 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
             onClick={handleRefresh}
             disabled={isLoading}
             className="p-2 hover:bg-white/10 rounded-lg transition-colors disabled:opacity-50"
+            title={isLoading ? "Loading..." : "Refresh news"}
           >
             <IconRefresh className={`h-4 w-4 text-muted-foreground ${isLoading ? 'animate-spin' : ''}`} />
           </button>
         </div>
+        {/* Error Display */}
+        {error && (
+          <div className="mt-3 p-3 bg-red-500/10 border border-red-500/20 rounded-lg">
+            <p className="text-sm text-red-400 font-mono">{error}</p>
+          </div>
+        )}
       </div>
 
       {/* Content */}
@@ -169,7 +198,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                   rel="noopener noreferrer"
                   className="group inline-flex items-center gap-2 bg-gradient-to-r from-primary/20 to-green-500/20 hover:from-primary/30 hover:to-green-500/30 px-4 py-2 rounded-lg transition-all duration-300 font-mono text-sm border border-white/10 hover:border-white/20"
                 >
-                  <span className="text-white group-hover:text-white/90">Read full article</span>
+                  <span className="text-white group-hover:text-white/90">full article</span>
                   <IconExternalLink className="h-4 w-4 text-white/70 group-hover:text-white group-hover:scale-110 transition-all duration-300" />
                 </a>
               </div>
@@ -213,7 +242,8 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
               <p className="text-muted-foreground font-mono">no news available</p>
               <button
                 onClick={handleRefresh}
-                className="mt-2 px-3 py-1 bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors font-mono text-sm"
+                disabled={isLoading}
+                className="mt-2 px-3 py-1 bg-primary/20 hover:bg-primary/30 rounded-lg transition-colors font-mono text-sm disabled:opacity-50"
               >
                 try again
               </button>
