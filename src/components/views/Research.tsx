@@ -689,6 +689,30 @@ export function Research() {
                   <>
                     {/* Performance Cards */}
                 <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-3">
+                  {stockData.performance?.twoYear !== null && stockData.performance?.twoYear !== undefined && (
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconChartLine className={`h-5 w-5 ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                        <span className="text-sm text-muted-foreground font-mono">2y performance</span>
+                      </div>
+                      <div className="text-xl font-bold font-mono">
+                        {formatPercentage(stockData.performance.twoYear)}
+                      </div>
+                    </div>
+                  )}
+                  
+                  {stockData.performance?.oneYear !== null && stockData.performance?.oneYear !== undefined && (
+                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
+                      <div className="flex items-center gap-2 mb-2">
+                        <IconTrendingUp className={`h-5 w-5 ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+                        <span className="text-sm text-muted-foreground font-mono">1y performance</span>
+                      </div>
+                      <div className="text-xl font-bold font-mono">
+                        {formatPercentage(stockData.performance.oneYear)}
+                      </div>
+                    </div>
+                  )}
+                  
                   {stockData.performance?.ytd !== null && stockData.performance?.ytd !== undefined && (
                     <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
                       <div className="flex items-center gap-2 mb-2">
@@ -721,30 +745,6 @@ export function Research() {
                       </div>
                       <div className="text-xl font-bold font-mono">
                         {formatPercentage(stockData.performance.oneMonth)}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stockData.performance?.oneYear !== null && stockData.performance?.oneYear !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconTrendingUp className={`h-5 w-5 ${stockData.performance.oneYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">1y performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.oneYear)}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {stockData.performance?.twoYear !== null && stockData.performance?.twoYear !== undefined && (
-                    <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
-                      <div className="flex items-center gap-2 mb-2">
-                        <IconChartLine className={`h-5 w-5 ${stockData.performance.twoYear >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-                        <span className="text-sm text-muted-foreground font-mono">2y performance</span>
-                      </div>
-                      <div className="text-xl font-bold font-mono">
-                        {formatPercentage(stockData.performance.twoYear)}
                       </div>
                     </div>
                   )}
