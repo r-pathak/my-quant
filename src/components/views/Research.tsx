@@ -409,7 +409,7 @@ export function Research() {
                   onClick={() => setShowManageStocks(!showManageStocks)}
                   className={`flex items-center gap-1 px-2 py-1 rounded-lg transition-colors text-xs font-mono ${
                     showManageStocks 
-                      ? 'bg-red-500/20 text-red-400 border border-red-500/30' 
+                      ? 'bg-green-500/20 text-green-400 border border-green-500/30' 
                       : 'bg-card/40 hover:bg-card/60 border border-white/20'
                   }`}
                 >
