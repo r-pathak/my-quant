@@ -810,7 +810,7 @@ export function Research() {
                     <div className="grid grid-cols-2 md:grid-cols-3 gap-4 text-sm">
                       {motleyFoolData.stockData.pe_ratio && motleyFoolData.stockData.pe_ratio !== "N/A" && (
                         <div>
-                          <div className="text-muted-foreground font-mono mb-1">P/E Ratio</div>
+                          <div className="text-muted-foreground font-mono mb-1">p/e ratio</div>
                           <div className="text-foreground font-bold font-mono text-base">{motleyFoolData.stockData.pe_ratio}</div>
                         </div>
                       )}
