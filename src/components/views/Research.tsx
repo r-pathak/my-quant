@@ -15,7 +15,6 @@ import {
   IconCurrencyDollar,
   IconPercentage,
   IconCalendarStats,
-  IconCalendar,
   IconSettings,
   IconTrash,
   IconRefresh,
@@ -53,12 +52,52 @@ export function Research() {
   const [showManageStocks, setShowManageStocks] = useState(false);
   const [showAddStockModal, setShowAddStockModal] = useState(false);
   const [activeTab, setActiveTab] = useState<'fundamentals' | 'technicals'>('fundamentals');
-  const [motleyFoolData, setMotleyFoolData] = useState<any>(null);
+  const [motleyFoolData, setMotleyFoolData] = useState<{
+    success: boolean;
+    stockData?: {
+      pe_ratio?: string;
+      market_cap?: string;
+      dividend_yield?: string;
+      sector?: string;
+      fifty_two_week_high?: string;
+      fifty_two_week_low?: string;
+      description?: string;
+    };
+    latestEarnings?: {
+      title: string;
+      date: string;
+      period: string;
+      summary: string;
+      url: string;
+    };
+    errors?: string[];
+  } | null>(null);
   const [isLoadingMotleyFool, setIsLoadingMotleyFool] = useState(false);
   const [hasLoadedMotleyFool, setHasLoadedMotleyFool] = useState<string | null>(null);
   
   // Technical analysis states
-  const [chartData, setChartData] = useState<any>(null);
+  const [chartData, setChartData] = useState<{
+    chartData: Array<{
+      timestamp: string;
+      open: number;
+      high: number;
+      low: number;
+      close: number;
+      volume?: number;
+      sma20?: number;
+      sma50?: number;
+      rsi?: number;
+      bollingerUpper?: number;
+      bollingerMiddle?: number;
+      bollingerLower?: number;
+    }>;
+    dataPoints?: number;
+    period?: string;
+    meta?: {
+      currency?: string;
+      regularMarketPrice?: number;
+    };
+  } | null>(null);
   const [isLoadingChart, setIsLoadingChart] = useState(false);
   const [timeframe, setTimeframe] = useState<'1h' | '1d' | '1wk' | '1mo'>('1d');
   const [indicators, setIndicators] = useState<{
@@ -142,7 +181,7 @@ export function Research() {
       setStockData(null);
       setMotleyFoolData(null);
     }
-  }, [selectedTicker, getStockData, getMotleyFoolData]);
+  }, [selectedTicker, getStockData, getMotleyFoolData, hasLoadedMotleyFool]);
 
   // Load chart data when switching to technicals tab or changing timeframe
   useEffect(() => {
@@ -243,7 +282,24 @@ export function Research() {
   };
 
   // Custom tooltip for the chart
-  const CustomTooltip = ({ active, payload, label }: any) => {
+  const CustomTooltip = ({ active, payload }: {
+    active?: boolean;
+    payload?: Array<{
+      payload: {
+        timestamp: string;
+        open: number;
+        high: number;
+        low: number;
+        close: number;
+        volume?: number;
+        sma20?: number;
+        sma50?: number;
+        rsi?: number;
+        bollingerMiddle?: number;
+      };
+    }>;
+    label?: string;
+  }) => {
     if (active && payload && payload.length) {
       const data = payload[0].payload;
       return (
@@ -310,17 +366,6 @@ export function Research() {
     return null;
   };
 
-  const formatLargeNumber = (value: number) => {
-    if (value >= 1e12) {
-      return `$${(value / 1e12).toFixed(1)}T`;
-    } else if (value >= 1e9) {
-      return `$${(value / 1e9).toFixed(1)}B`;
-    } else if (value >= 1e6) {
-      return `$${(value / 1e6).toFixed(1)}M`;
-    } else {
-      return `$${value.toLocaleString()}`;
-    }
-  };
 
   const formatMarketCap = (value: number) => {
     if (value >= 1e12) return `$${(value / 1e12).toFixed(2)}T`;
@@ -934,7 +979,7 @@ export function Research() {
                       <div className="p-4 border-b border-white/10">
                         <h3 className="text-lg font-bold text-foreground font-mono">Price Chart</h3>
                         <p className="text-sm text-muted-foreground font-mono">
-                          {stockData.ticker} • {timeframe.toUpperCase()} • {Object.entries(indicators).filter(([_, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'No indicators'}
+                          {stockData.ticker} • {timeframe.toUpperCase()} • {Object.entries(indicators).filter(([, v]) => v).map(([k]) => k.toUpperCase()).join(', ') || 'No indicators'}
                         </p>
                       </div>
                       
@@ -1101,7 +1146,7 @@ export function Research() {
                           fontFamily="monospace"
                         />
                                         <Tooltip 
-                                          content={({ active, payload, label }) => {
+                                          content={({ active, payload }) => {
                                             if (active && payload && payload.length) {
                                               const data = payload[0].payload;
                                               return (
@@ -1150,7 +1195,12 @@ export function Research() {
                                   setIsLoadingChart(true);
                                   // TODO: Implement chart data loading
                                   setTimeout(() => {
-                                    setChartData({ placeholder: true });
+                                    setChartData({ 
+                                      chartData: [],
+                                      dataPoints: 0,
+                                      period: 'No data',
+                                      meta: { currency: 'USD' }
+                                    });
                                     setIsLoadingChart(false);
                                   }, 2000);
                                 }}
