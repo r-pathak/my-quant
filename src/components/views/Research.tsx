@@ -74,6 +74,7 @@ export function Research() {
   } | null>(null);
   const [isLoadingMotleyFool, setIsLoadingMotleyFool] = useState(false);
   const [hasLoadedMotleyFool, setHasLoadedMotleyFool] = useState<string | null>(null);
+  const [isDescriptionExpanded, setIsDescriptionExpanded] = useState(false);
   
   // Technical analysis states
   const [chartData, setChartData] = useState<{
@@ -850,50 +851,24 @@ export function Research() {
                           <div className="text-muted-foreground font-mono mb-2 text-sm">description</div>
                           <div className="group cursor-pointer">
                             <div 
-                              ref={(el) => {
-                                if (el) {
-                                  // Check if text is actually truncated
-                                  const isTruncated = el.scrollHeight > el.clientHeight;
-                                  const hintElement = el.nextElementSibling as HTMLElement;
-                                  if (hintElement) {
-                                    hintElement.style.display = isTruncated ? 'block' : 'none';
-                                  }
-                                }
-                              }}
                               className="text-foreground font-mono font-semibold text-sm leading-relaxed transition-all duration-300 ease-in-out"
                               style={{
-                                display: '-webkit-box',
-                                WebkitLineClamp: 2,
+                                display: isDescriptionExpanded ? 'block' : '-webkit-box',
+                                WebkitLineClamp: isDescriptionExpanded ? 'unset' : 2,
                                 WebkitBoxOrient: 'vertical',
-                                overflow: 'hidden',
+                                overflow: isDescriptionExpanded ? 'visible' : 'hidden',
                               }}
-                              onMouseEnter={(e) => {
-                                const element = e.currentTarget;
-                                const parentContainer = element.closest('.bg-card\\/40') as HTMLElement;
-                                if (parentContainer) {
-                                  parentContainer.style.zIndex = '20';
-                                  parentContainer.style.position = 'relative';
-                                }
-                                element.style.display = 'block';
-                                element.style.webkitLineClamp = 'unset';
-                                element.style.overflow = 'visible';
-                              }}
-                              onMouseLeave={(e) => {
-                                const element = e.currentTarget;
-                                const parentContainer = element.closest('.bg-card\\/40') as HTMLElement;
-                                if (parentContainer) {
-                                  parentContainer.style.zIndex = '';
-                                  parentContainer.style.position = '';
-                                }
-                                element.style.display = '-webkit-box';
-                                element.style.webkitLineClamp = '2';
-                                element.style.overflow = 'hidden';
+                              onClick={() => {
+                                setIsDescriptionExpanded(!isDescriptionExpanded);
                               }}
                             >
                               {motleyFoolData.stockData.description.toLowerCase()}
                             </div>
-                            <div className="text-xs text-muted-foreground font-mono mt-1 opacity-60 group-hover:opacity-0 transition-opacity duration-300">
-                              Hover to read more...
+                            <div 
+                              className="text-xs text-muted-foreground font-mono mt-1 opacity-60 transition-opacity duration-300 cursor-pointer hover:opacity-80"
+                              onClick={() => setIsDescriptionExpanded(!isDescriptionExpanded)}
+                            >
+                              {isDescriptionExpanded ? 'Click to show less...' : 'Click to read more...'}
                             </div>
                           </div>
                         </div>
