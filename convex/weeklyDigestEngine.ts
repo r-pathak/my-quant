@@ -71,22 +71,22 @@ export const processUserDigest = internalAction({
 
       // 2. Get top 10 holdings by value and limit research to 10
       const topHoldings = allHoldings
-        .map(h => ({ ...h, value: (h.currentPrice || h.boughtPrice) * h.unitsHeld }))
-        .sort((a, b) => b.value - a.value)
+        .map((h: any) => ({ ...h, value: (h.currentPrice || h.boughtPrice) * h.unitsHeld }))
+        .sort((a: any, b: any) => b.value - a.value)
         .slice(0, 10);
       
       // Filter out research stocks that are already in portfolio
-      const portfolioTickers = new Set(topHoldings.map(h => h.ticker));
+      const portfolioTickers = new Set(topHoldings.map((h: any) => h.ticker));
       const researchStocks = allResearchStocks
-        .filter(r => !portfolioTickers.has(r.ticker))
+        .filter((r: any) => !portfolioTickers.has(r.ticker))
         .slice(0, 10);
       
       console.log(`📊 Processing ${topHoldings.length} holdings and ${researchStocks.length} research stocks`);
 
       // 3. Get all unique tickers
       const allTickers = [...new Set([
-        ...topHoldings.map(h => h.ticker),
-        ...researchStocks.map(r => r.ticker),
+        ...topHoldings.map((h: any) => h.ticker),
+        ...researchStocks.map((r: any) => r.ticker),
       ])];
 
       // 4. Fetch current prices from Yahoo Finance
@@ -168,10 +168,10 @@ export const processUserDigest = internalAction({
       );
 
       // 7. Calculate portfolio metrics
-      const totalPortfolioValue = holdingsWithAnalysis.reduce((sum, holding) => sum + holding.value, 0);
+      const totalPortfolioValue = holdingsWithAnalysis.reduce((sum: number, holding: any) => sum + holding.value, 0);
       
       // Calculate weekly portfolio change using actual weekly value changes
-      const totalWeeklyPortfolioChange = holdingsWithAnalysis.reduce((sum, holding) => sum + holding.weeklyValueChange, 0);
+      const totalWeeklyPortfolioChange = holdingsWithAnalysis.reduce((sum: number, holding: any) => sum + holding.weeklyValueChange, 0);
       const portfolioValueWeekAgo = totalPortfolioValue - totalWeeklyPortfolioChange;
       const weeklyPortfolioChangePercent = portfolioValueWeekAgo > 0 ? (totalWeeklyPortfolioChange / portfolioValueWeekAgo) * 100 : 0;
 
@@ -308,7 +308,7 @@ export const getStockAnalysisWithNews = internalAction({
     currentPrice: v.number(),
     boughtPrice: v.number(),
   },
-  handler: async (ctx, { ticker, companyName, currentPrice, boughtPrice }) => {
+  handler: async (ctx, { ticker, companyName, currentPrice, boughtPrice }): Promise<any> => {
     console.log(`🔍 Analyzing ${ticker} with news and AI`);
     
     try {
@@ -353,32 +353,36 @@ export const getStockAnalysisWithNews = internalAction({
         }
       }
 
-      // 3. Generate AI analysis
-      const priceChange = currentPrice - boughtPrice;
-      const priceChangePercent = boughtPrice > 0 ? (priceChange / boughtPrice) * 100 : 0;
+      // 3. Generate AI analysis using WEEKLY data only
+      const weeklyPriceData: any = await ctx.runAction(internal.weeklyDigestEngine.fetchCurrentPrices, { tickers: [ticker] });
+      const weeklyChange: number = weeklyPriceData[ticker]?.weeklyChangePercent || 0;
+      const priceWeekAgo: number = weeklyPriceData[ticker]?.priceWeekAgo || currentPrice;
       
-      const prompt = `
-Analyze ${ticker} (${companyName}) for a trading recommendation.
+      const prompt: string = `
+Analyze ${ticker} (${companyName}) for a trading recommendation based on THIS WEEK'S performance.
 
 Current Price: $${currentPrice.toFixed(2)}
-Previous/Bought Price: $${boughtPrice.toFixed(2)}
-Price Change: ${priceChangePercent.toFixed(2)}%
+Price Week Ago: $${priceWeekAgo.toFixed(2)}
+Weekly Change: ${weeklyChange.toFixed(2)}%
 
 Recent News (last 7 days):
 ${newsContent || 'No recent news available'}
 
 News Sources: ${newsUrls.join(', ')}
 
-Provide a concise analysis (max 120 words) and a clear recommendation (BUY, SELL, or HOLD).
-Focus on:
-1. Key factors from the news affecting the stock
-2. Technical and fundamental outlook
-3. Risk assessment
-4. Clear rationale for recommendation
+Provide a concise analysis (max 120 words) and a clear recommendation (BUY, SELL, or HOLD) based on THIS WEEK'S performance and news.
+
+Focus ONLY on:
+1. How recent news impacted THIS WEEK'S performance
+2. Weekly price movement analysis (${weeklyChange.toFixed(2)}% change)
+3. Market sentiment from this week's news
+4. Short-term outlook based on weekly trends
+
+IMPORTANT: Only reference the weekly change percentage provided above. Do not mention any other price movements or timeframes.
 
 Format your response as:
 RECOMMENDATION: [BUY/SELL/HOLD]
-ANALYSIS: [Your analysis here]
+ANALYSIS: [Your analysis here focusing on weekly performance]
 `;
 
       const response = await openai.chat.completions.create({
@@ -449,36 +453,40 @@ export const generatePortfolioOverview = internalAction({
     console.log(`🤖 Generating portfolio overview with AI`);
     
     try {
-      // Prepare portfolio summary data with weekly changes and news
+      // Prepare portfolio summary data with ONLY weekly changes and news
       const holdingsSummary = holdingsWithAnalysis.map(h => {
-        // Use actual weekly change percentage
+        // Use ONLY the weekly change percentage - no other price data
         const weeklyChange = h.weeklyChangePercent || 0;
-        const newsSummary = h.summary ? h.summary.substring(0, 150) + '...' : 'No recent news analysis available';
-        return `${h.symbol}: ${h.recommendation} (${weeklyChange.toFixed(1)}% weekly, $${h.value.toLocaleString()} value) - ${newsSummary}`;
+        const weeklyDirection = weeklyChange > 0 ? 'gained' : weeklyChange < 0 ? 'declined' : 'remained flat';
+        const newsSummary = h.summary ? h.summary.substring(0, 100) + '...' : 'No recent news analysis available';
+        return `${h.symbol}: ${weeklyDirection} ${Math.abs(weeklyChange).toFixed(1)}% this week (${h.recommendation}) - ${newsSummary}`;
       }).join('\n');
       
       const researchSummary = researchWithAnalysis.map(r => {
-        const weeklyChange = r.priceChangePercent || 0;
-        return `${r.symbol}: ${r.recommendation} (${weeklyChange.toFixed(1)}% weekly)`;
+        const weeklyChange = r.weeklyChangePercent || 0;
+        const weeklyDirection = weeklyChange > 0 ? 'gained' : weeklyChange < 0 ? 'declined' : 'remained flat';
+        return `${r.symbol}: ${weeklyDirection} ${Math.abs(weeklyChange).toFixed(1)}% this week (${r.recommendation})`;
       }).join('\n');
 
       const prompt = `
-Provide a brief portfolio summary for this week.
+Provide a brief portfolio summary for this week ONLY.
 
-PORTFOLIO: $${totalPortfolioValue.toLocaleString()} total value
+PORTFOLIO: $${totalPortfolioValue.toLocaleString()} total value (${totalPortfolioChange >= 0 ? 'gained' : 'declined'} ${Math.abs(portfolioChangePercent).toFixed(1)}% this week)
 
-HOLDINGS WITH NEWS ANALYSIS (${holdingsWithAnalysis.length}):
+HOLDINGS WITH WEEKLY PERFORMANCE AND NEWS (${holdingsWithAnalysis.length}):
 ${holdingsSummary}
 
-Based on the above holdings, their performance, recommendations, and news analysis, write a concise portfolio summary (max 150 words) covering:
-- Overall portfolio performance and trends
+IMPORTANT: Only reference the WEEKLY performance data provided above. Do not mention any other price movements, percentages, or timeframes.
+
+Write a concise portfolio summary (max 150 words) covering:
+- Overall portfolio performance THIS WEEK
 - Key news themes affecting your holdings
-- Notable winners/losers and why
+- Notable weekly winners/losers and why
 - Market sentiment from the news
 
 No bullet points or sections - just a flowing, insightful paragraph in a professional but conversational tone. Address the portfolio owner directly using 'your portfolio' rather than 'the portfolio'.
 
-Your answer should be less than 150 words in total.
+Only reference the weekly changes shown above - no other price data or timeframes.
 `;
 
       const response = await openai.chat.completions.create({

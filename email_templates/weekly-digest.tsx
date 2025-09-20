@@ -88,26 +88,19 @@ export const WeeklyDigestEmail = ({
   return (
     <Html>
       <Head />
-      <Preview>myquant. weekly digest - {weekEnding}</Preview>
+      <Preview>myquant. weekly digest</Preview>
       <Body style={main}>
         <Container style={container}>
           {/* Header */}
-          {/* <Section style={header}>
-            <Row style={headerRow}>
-              <Column style={logoColumn}> */}
-                <Img
-                  src={'https://my-quant.vercel.app/logo-white.png'}
-                  width="80"
-                  height="80"
-                  alt="myquant"
-                  style={logo}
-                />
-              {/* </Column> */}
-              {/* <Column style={titleColumn}>
-                <Text style={weeklyDigestTitle}>weekly digest</Text>
-              </Column> */}
-            {/* </Row>
-          </Section> */}
+          <Section style={logoSection}>
+            <Img
+              src={'https://my-quant.vercel.app/logo-white.png'}
+              width="80"
+              height="80"
+              alt="myquant"
+              style={logo}
+            />
+          </Section>
 
           {/* Greeting */}
           <Section style={section}>
@@ -231,7 +224,7 @@ export const WeeklyDigestEmail = ({
                   <Text style={summary}>{stock.summary}</Text>
                   {stock.newsUrls && stock.newsUrls.length > 0 && (
                     <div style={newsLinks}>
-                      <Text style={newsLabel}>sources:</Text>
+                      {/* <Text style={newsLabel}>sources:</Text> */}
                       {stock.newsUrls.map((url, index) => (
                         <a key={index} href={url} style={newsLink}>
                           article {index + 1}
@@ -298,6 +291,11 @@ const logoColumn = {
 
 const titleColumn = {
   textAlign: 'right' as const,
+};
+
+const logoSection = {
+  padding: '0 24px',
+  marginBottom: '24px',
 };
 
 const logo = {
