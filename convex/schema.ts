@@ -67,4 +67,25 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_user_ticker", ["userId", "ticker"]),
+  userPhoneContacts: defineTable({
+    userId: v.id("users"),
+    phoneNumber: v.string(),
+    internationalDialCode: v.string(),
+    schedule: v.optional(v.object({
+      monday: v.optional(v.array(v.string())),
+      tuesday: v.optional(v.array(v.string())),
+      wednesday: v.optional(v.array(v.string())),
+      thursday: v.optional(v.array(v.string())),
+      friday: v.optional(v.array(v.string())),
+      saturday: v.optional(v.array(v.string())),
+      sunday: v.optional(v.array(v.string())),
+    })),
+  }).index("by_userId", ["userId"]),
+  calls: defineTable({
+    userId: v.id("users"),
+    startTime: v.number(),
+    endTime: v.number(),
+    summary: v.string(),
+    transcript: v.string(),
+  }).index("by_userId", ["userId"]),
 });

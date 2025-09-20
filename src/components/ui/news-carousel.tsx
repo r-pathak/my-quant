@@ -210,7 +210,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                 onClick={handlePrevious}
                 className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-mono text-sm"
               >
-                Previous
+                previous
               </button>
               
               <div className="flex items-center gap-2">
@@ -231,7 +231,7 @@ export default function NewsCarousel({ holdings }: NewsCarouselProps) {
                 onClick={handleNext}
                 className="px-3 py-1 bg-white/10 hover:bg-white/20 rounded-lg transition-colors font-mono text-sm"
               >
-                Next
+                next
               </button>
             </div>
           </>

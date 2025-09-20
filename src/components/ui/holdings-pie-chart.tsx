@@ -83,7 +83,7 @@ export default function HoldingsPieChart({ holdings }: HoldingsPieChartProps) {
       <div className="bg-card border border-border rounded-lg p-6 h-80 flex items-center justify-center">
         <div className="text-center">
           <p className="text-muted-foreground font-mono">no holdings data available</p>
-          <p className="text-sm text-muted-foreground mt-1 font-mono">Add some positions to see the chart</p>
+          <p className="text-sm text-muted-foreground mt-1 font-mono">add some positions to see the chart</p>
         </div>
       </div>
     );

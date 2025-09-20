@@ -338,18 +338,21 @@ async function summarizeEarningsTranscript(transcriptContent: string, ticker: st
 
     console.log(`Summarizing earnings transcript for ${ticker}`);
 
-    const prompt = `As a financial analyst, please provide a concise summary of this ${companyName} (${ticker}) earnings call transcript from an investor's perspective. Focus on:
+    const prompt = `Summarize ${companyName} (${ticker})s earnings call like you're talking to active investors hunting for opportunities. Cut through the corporate fluff and focus on what actually matters for the stock:
 
-1. Key financial highlights (revenue, earnings, guidance)
-2. Major business developments or strategic initiatives
-3. Management outlook and forward guidance
-4. Any significant risks or challenges mentioned
-5. Overall sentiment and key takeaways for investors
+  The headline numbers (revenue, earnings, guidance — beats or misses).
 
-Keep the summary under 200 words and focus on actionable insights for potential investors.
+  Any big moves or strategic plays management is making.
 
-Transcript content:
-${transcriptContent.substring(0, 8000)} // Limit content to avoid token limits`;
+  How leadership sees the road ahead — optimism, caution, or hedging?
+
+  Risks, red flags, or challenges investors should keep on their radar.
+
+  The overall vibe: bullish, bearish, or mixed — and why that matters for anyone thinking about buying, holding, or selling.
+
+  Keep it punchy (under 200 words), actionable, and written in a way that gives investors the real story without the jargon.
+  Transcript content:
+  ${transcriptContent} // Limit content to avoid token limits`;
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -358,14 +361,14 @@ ${transcriptContent.substring(0, 8000)} // Limit content to avoid token limits`;
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        model: "gpt-3.5-turbo",
+        model: "gpt-4o-mini",
         messages: [
           {
             role: "user",
             content: prompt
           }
         ],
-        max_tokens: 300,
+        max_tokens: 500,
         temperature: 0.3
       })
     });

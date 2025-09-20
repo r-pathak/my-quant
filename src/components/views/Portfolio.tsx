@@ -474,7 +474,7 @@ export default function Portfolio() {
             </div>
           ) : (
             <div className="text-center py-12">
-              <p className="text-muted-foreground font-mono">no holdings found. Add some positions to get started!</p>
+              <p className="text-muted-foreground font-mono">no holdings found. add some positions to get started.</p>
             </div>
           )}
         </div>

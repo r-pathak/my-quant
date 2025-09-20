@@ -15,7 +15,8 @@ import {
   IconPercentage,
   IconTrash,
   IconRefresh,
-  IconExternalLink
+  IconExternalLink,
+  IconBrain
 } from "@tabler/icons-react";
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 
@@ -643,7 +644,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                       
                       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mt-6 text-xs">
                         <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-400/20 rounded-lg p-3 text-center">
-                          {/* <IconSparkles className="h-5 w-5 text-blue-400 mb-2 mx-auto" /> */}
+                          <IconBrain className="h-5 w-5 text-blue-400 mb-2 mx-auto" />
                           <div className="font-mono font-semibold text-blue-300">ai earnings</div>
                           <div className="text-muted-foreground font-mono">powered by firecrawl & openai</div>
                         </div>
