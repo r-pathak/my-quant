@@ -24,6 +24,7 @@ import type * as tasks from "../tasks.js";
 import type * as users from "../users.js";
 import type * as wallstreetbetsActions from "../wallstreetbetsActions.js";
 import type * as weeklyDigestActions from "../weeklyDigestActions.js";
+import type * as weeklyDigestCron from "../weeklyDigestCron.js";
 import type * as weeklyDigestEngine from "../weeklyDigestEngine.js";
 import type * as weeklyDigestQueries from "../weeklyDigestQueries.js";
 
@@ -58,6 +59,7 @@ declare const fullApi: ApiFromModules<{
   users: typeof users;
   wallstreetbetsActions: typeof wallstreetbetsActions;
   weeklyDigestActions: typeof weeklyDigestActions;
+  weeklyDigestCron: typeof weeklyDigestCron;
   weeklyDigestEngine: typeof weeklyDigestEngine;
   weeklyDigestQueries: typeof weeklyDigestQueries;
 }>;
