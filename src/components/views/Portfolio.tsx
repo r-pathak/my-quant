@@ -209,20 +209,20 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground font-mono">total value</p>
-                <p className="text-xl font-bold text-foreground font-mono">
+                <p className="text-sm text-muted-foreground font-mono">total value</p>
+                <p className="text-2xl font-bold text-foreground font-mono">
                   ${portfolioSummary ? portfolioSummary.totalValue.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00'}
                 </p>
               </div>
               {/* <IconDollarSign className="h-6 w-6 text-primary" /> */}
             </div>
-            <div className="flex items-center gap-1 mt-1">
+            <div className="flex items-center gap-1 mt-2">
               {todaysPnL >= 0 ? (
                 <IconTrendingUp className="h-3 w-3 text-green-400" />
               ) : (
                 <IconTrendingDown className="h-3 w-3 text-red-400" />
               )}
-              <span className={`text-xs font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`Today's Change: ${todaysPnL >= 0 ? '+' : ''}$${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
+              <span className={`text-sm font-mono ${todaysPnL >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`Today's Change: ${todaysPnL >= 0 ? '+' : ''}$${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`}>
                 {todaysPnL >= 0 ? '+' : ''}${Math.abs(todaysPnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })} today
               </span>
             </div>
@@ -270,20 +270,20 @@ export default function Portfolio() {
           <div className="bg-card/40 backdrop-blur-xl border border-white/20 rounded-2xl p-4 shadow-2xl">
             <div className="flex items-center justify-between">
               <div>
-                <p className="text-xs text-muted-foreground font-mono">unrealized p&l</p>
-                <p className={`text-xl font-bold font-mono ${allTimePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
+                <p className="text-sm text-muted-foreground font-mono">unrealized p&l</p>
+                <p className={`text-2xl font-bold font-mono ${allTimePnL >= 0 ? 'text-green-400' : 'text-red-400'}`}>
                   {allTimePnL >= 0 ? '+' : ''}${Math.abs(allTimePnL).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
                 </p>
               </div>
               {allTimePnL >= 0 ? (
-                <IconTrendingUp className="h-6 w-6 text-green-400" />
+                <IconTrendingUp className="h-8 w-8 text-green-400" />
               ) : (
-                <IconTrendingDown className="h-6 w-6 text-red-400" />
+                <IconTrendingDown className="h-8 w-8 text-red-400" />
               )}
             </div>
-            <div className="flex items-center gap-1 mt-1">
-              <IconPercentage className={`h-3 w-3 ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} />
-              <span className={`text-xs font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`unrealized return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
+            <div className="flex items-center gap-1 mt-2">
+              <IconPercentage className={`h-4 w-4 ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} />
+              <span className={`text-sm font-mono ${allTimePnLPercentage >= 0 ? 'text-green-400' : 'text-red-400'}`} title={`unrealized return: ${allTimePnLPercentage >= 0 ? '+' : ''}${allTimePnLPercentage.toFixed(2)}%`}>
                 {allTimePnLPercentage >= 0 ? '+' : ''}{allTimePnLPercentage.toFixed(1)}% 
               </span>
             </div>
