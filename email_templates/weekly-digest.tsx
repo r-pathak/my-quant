@@ -51,6 +51,8 @@ interface WeeklyDigestEmailProps {
   portfolioChange: number;
   portfolioChangePercent: number;
   portfolioOverview?: string;
+
+  researchSummary?: string;
 }
 
 export const WeeklyDigestEmail = ({
@@ -63,6 +65,7 @@ export const WeeklyDigestEmail = ({
   portfolioChange,
   portfolioChangePercent,
   portfolioOverview,
+  researchSummary,
 }: WeeklyDigestEmailProps) => {
   const getRecommendationColor = (recommendation: string) => {
     switch (recommendation) {
@@ -191,6 +194,16 @@ export const WeeklyDigestEmail = ({
               </div>
             ))}
           </Section>
+
+          {/* Research Summary */}
+          {researchSummary && researchStocks.length > 0 && (
+            <Section style={section}>
+              <Heading style={h2}>research overview</Heading>
+              <div style={overviewCard}>
+                <Text style={overviewText}>{researchSummary}</Text>
+              </div>
+            </Section>
+          )}
 
           {/* Research Stocks */}
           {researchStocks.length > 0 && (

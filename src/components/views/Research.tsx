@@ -1089,7 +1089,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                         
                         <div className="relative">
                           <div className="text-sm text-foreground font-mono leading-relaxed bg-gradient-to-br from-white/5 to-white/10 rounded-xl p-4 border border-white/10">
-                            {motleyFoolData.latestEarnings.summary.toLowerCase()}
+                            {motleyFoolData.latestEarnings.summary.toLowerCase().replace(/\*\*/g, '')}
                           </div>
                           {/* AI Badge
                           <div className="absolute -top-2 -right-2 bg-gradient-to-r from-purple-500 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-mono font-bold shadow-lg">

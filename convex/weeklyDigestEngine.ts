@@ -184,7 +184,14 @@ export const processUserDigest = internalAction({
         portfolioChangePercent: weeklyPortfolioChangePercent,
       });
 
-      // 9. Send email
+      // 9. Generate research summary with AI (only if there are research stocks)
+      const researchSummary = researchWithAnalysis.length > 0 
+        ? await ctx.runAction(internal.weeklyDigestEngine.generateResearchSummary, {
+            researchWithAnalysis,
+          })
+        : "";
+
+      // 10. Send email
       // Get user's first name (lowercase)
       const firstName = userName 
         ? userName.split(' ')[0].toLowerCase()
@@ -204,6 +211,7 @@ export const processUserDigest = internalAction({
         portfolioChange: totalWeeklyPortfolioChange, // Use weekly change
         portfolioChangePercent: weeklyPortfolioChangePercent, // Use weekly %
         portfolioOverview,
+        researchSummary,
       });
 
       console.log(`✅ Successfully processed and sent digest for ${userEmail}`);
@@ -516,6 +524,73 @@ Only reference the weekly changes shown above - no other price data or timeframe
   },
 });
 
+// Generate research summary with AI
+export const generateResearchSummary = internalAction({
+  args: {
+    researchWithAnalysis: v.array(v.any()),
+  },
+  handler: async (ctx, { researchWithAnalysis }): Promise<string> => {
+    console.log(`🤖 Generating research summary with AI`);
+    
+    try {
+      if (researchWithAnalysis.length === 0) {
+        return "";
+      }
+
+      // Prepare research summary data with ONLY weekly changes and news
+      const researchSummary = researchWithAnalysis.map((r: any) => {
+        const weeklyChange = r.weeklyChangePercent || 0;
+        const weeklyDirection = weeklyChange > 0 ? 'gained' : weeklyChange < 0 ? 'declined' : 'remained flat';
+        const newsSummary = r.summary ? r.summary.substring(0, 100) + '...' : 'No recent news analysis available';
+        return `${r.symbol}: ${weeklyDirection} ${Math.abs(weeklyChange).toFixed(1)}% this week (${r.recommendation}) - ${newsSummary}`;
+      }).join('\n');
+
+      const prompt: string = `
+Provide a brief research watchlist summary for this week ONLY.
+
+RESEARCH STOCKS WITH WEEKLY PERFORMANCE AND NEWS (${researchWithAnalysis.length}):
+${researchSummary}
+
+IMPORTANT: Only reference the WEEKLY performance data provided above. Do not mention any other price movements, percentages, or timeframes.
+
+Write a concise research summary (max 100 words) covering:
+- Overall performance of research stocks THIS WEEK
+- Key themes and opportunities from the watchlist
+- Notable weekly movers and their news
+- Investment opportunities worth considering
+
+No bullet points or sections - just a flowing, insightful paragraph in a professional but conversational tone. Address the reader directly using 'your research watchlist' rather than 'the watchlist'.
+
+Only reference the weekly changes shown above - no other price data or timeframes.
+`;
+
+      const response: any = await openai.chat.completions.create({
+        model: "gpt-4o-mini",
+        messages: [
+          {
+            role: "system",
+            content: "You are a professional research analyst providing weekly investment insights on watchlist stocks. Be concise, actionable, and focus on opportunities and trends."
+          },
+          {
+            role: "user",
+            content: prompt
+          }
+        ],
+        temperature: 0.4,
+      });
+
+      const summary: string = response.choices[0]?.message?.content || "Research analysis unavailable at this time.";
+      
+      console.log(`✅ Generated research summary: ${summary.substring(0, 100)}...`);
+      return summary;
+
+    } catch (error) {
+      console.error(`❌ Failed to generate research summary:`, error);
+      return "Your research analysis will be available in the next digest.";
+    }
+  },
+});
+
 // Send digest email
 export const sendDigestEmail = internalAction({
   args: {
@@ -528,6 +603,7 @@ export const sendDigestEmail = internalAction({
     portfolioChange: v.number(),
     portfolioChangePercent: v.number(),
     portfolioOverview: v.optional(v.string()),
+    researchSummary: v.optional(v.string()),
   },
   handler: async (ctx, emailData) => {
     console.log(`📧 Sending email to ${emailData.userEmail}`);
