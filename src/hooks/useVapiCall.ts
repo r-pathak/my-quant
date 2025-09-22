@@ -93,20 +93,22 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
       })
       .sort((a, b) => b.totalValue - a.totalValue);
 
-    const topHolding = sortedHoldings[0]?.ticker;
-    const secondHolding = sortedHoldings[1]?.ticker;
+    const topHolding = sortedHoldings[0];
+    const secondHolding = sortedHoldings[1];
     
-    // Just list the tickers briefly
-    const tickers = sortedHoldings.map(h => h.ticker).join(', ');
+    // Create a list with company names for natural conversation
+    const holdingsList = sortedHoldings.map(h => `${h.ticker} (${h.companyName})`).join(', ');
 
-    let prompt = `You are a finance expert. The user holds: ${tickers}.`;
+    let prompt = `You are a finance expert. The user holds: ${holdingsList}.`;
     
     if (topHolding) {
-      prompt += ` Ask: "Want me to give you the latest on ${topHolding}?`;
+      prompt += ` Ask: "Want me to give you the latest on ${topHolding.companyName}?`;
       if (secondHolding) {
-        prompt += ` Maybe ${secondHolding}?`;
+        prompt += ` Maybe ${secondHolding.companyName}?`;
       }
-      prompt += `" Use the firecrawl tool when they say yes.`;
+      prompt += `" 
+
+When researching stocks using the firecrawl tool, DO NOT robotically list article summaries. Instead, weave the news into a flowing, engaging story about the company's outlook. Synthesize multiple sources into a cohesive narrative that tells the bigger picture. End with a clear conclusion about the investment outlook from an investor's perspective - bullish, bearish, or mixed - and why.`;
     }
 
     return prompt;
