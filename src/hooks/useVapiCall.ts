@@ -84,35 +84,32 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
       return "You are a finance expert. Ask the user about their portfolio and offer to research any stocks they're interested in using the firecrawl tool.";
     }
 
-    // Calculate portfolio details
-    const portfolioDetails = holdings.map(holding => {
-      const currentPrice = holding.currentPrice || holding.boughtPrice;
-      const costBasis = holding.unitsHeld * holding.boughtPrice;
-      const currentValue = holding.unitsHeld * currentPrice;
-      const profit = currentValue - costBasis;
-      const profitPercent = (profit / costBasis) * 100;
-      
-      return {
-        ticker: holding.ticker,
-        company: holding.companyName,
-        shares: holding.unitsHeld,
-        currentPrice: currentPrice,
-        profit: profit,
-        profitPercent: profitPercent
-      };
-    });
+    // Sort holdings by total value to get top holdings
+    const sortedHoldings = holdings
+      .map(holding => {
+        const currentPrice = holding.currentPrice || holding.boughtPrice;
+        const totalValue = holding.unitsHeld * currentPrice;
+        return { ...holding, totalValue };
+      })
+      .sort((a, b) => b.totalValue - a.totalValue);
 
-    const totalValue = portfolioDetails.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
-    const totalProfit = portfolioDetails.reduce((sum, h) => sum + h.profit, 0);
-    const totalProfitPercent = (totalProfit / (totalValue - totalProfit)) * 100;
+    const topHolding = sortedHoldings[0]?.ticker;
+    const secondHolding = sortedHoldings[1]?.ticker;
+    
+    // Just list the tickers briefly
+    const tickers = sortedHoldings.map(h => h.ticker).join(', ');
 
-    const holdingsList = portfolioDetails.map(h => 
-      `${h.ticker} (${h.shares} shares @ $${h.currentPrice.toFixed(2)}) - ${h.profit >= 0 ? '+' : ''}$${h.profit.toFixed(0)} (${h.profitPercent >= 0 ? '+' : ''}${h.profitPercent.toFixed(1)}%)`
-    ).join(', ');
+    let prompt = `You are a finance expert. The user holds: ${tickers}.`;
+    
+    if (topHolding) {
+      prompt += ` Ask: "Want me to give you the latest on ${topHolding}?`;
+      if (secondHolding) {
+        prompt += ` Maybe ${secondHolding}?`;
+      }
+      prompt += `" Use the firecrawl tool when they say yes.`;
+    }
 
-    return `You are a finance expert. The user's portfolio: ${holdingsList}. Total value: $${totalValue.toFixed(0)}, Total P&L: ${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(0)} (${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%). 
-
-Mention their specific holdings and ask if they want you to research any of these stocks using the firecrawl tool. Keep responses conversational and concise.`;
+    return prompt;
   }, [holdings]);
 
   // Start a call with existing assistant ID

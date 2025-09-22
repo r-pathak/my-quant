@@ -1,36 +1,130 @@
-# MyQuant - AI-Powered Portfolio Management
+# MyQuant - AI-Powered Portfolio Management Platform
 
-This is a [Next.js](https://nextjs.org) project with AI-powered portfolio management features including voice calls with a stock assistant.
+A comprehensive, modern portfolio management platform built with Next.js, Convex, and AI integrations. Track your investments, get real-time market data, research stocks with AI, and receive personalized insights through voice interactions.
 
-## Features
+![MyQuant Dashboard](https://img.shields.io/badge/Status-Active-green) ![Next.js](https://img.shields.io/badge/Next.js-15.5.3-black) ![TypeScript](https://img.shields.io/badge/TypeScript-5.0-blue) ![Convex](https://img.shields.io/badge/Convex-Backend-orange)
 
-- **Portfolio Management**: Track your stock holdings with real-time price updates
-- **AI Voice Assistant**: Get instant market updates via voice calls using Vapi
-- **Research Tools**: Deep dive into stock research and news
-- **Real-time Data**: Live price updates and portfolio analytics
+## 🚀 Features
 
-## Getting Started
+### 📊 **Portfolio Management**
+- **Real-time Portfolio Tracking**: Live price updates for all your holdings
+- **Interactive Dashboard**: Beautiful, responsive portfolio overview with charts
+- **P&L Analytics**: Track daily and all-time profit/loss with percentage changes
+- **Holdings Management**: Add, edit, and manage your stock positions
+- **Pie Chart Visualization**: Visual breakdown of your portfolio allocation
+- **Auto-refresh**: Configurable automatic price updates every 5 minutes
+
+### 🤖 **AI-Powered Research**
+- **Stock Research Engine**: Deep dive into any stock with AI-powered analysis
+- **News Aggregation**: Latest news and market updates for your holdings
+- **Firecrawl Integration**: Web scraping for real-time market intelligence
+- **Research Reports**: Comprehensive analysis with market impact insights
+
+### 🎙️ **Voice Assistant (Vapi Integration)**
+- **In-browser Voice Calls**: Talk to your AI portfolio assistant
+- **Personalized Insights**: Assistant knows your specific holdings
+- **Research on Demand**: Ask for research on any of your stocks
+- **Conversational Interface**: Natural language interaction
+- **Real-time Controls**: Mute, unmute, and end call controls
+
+### 📈 **Market Data & Analytics**
+- **Real-time Price Updates**: Live stock prices and daily changes
+- **Portfolio Metrics**: Total value, P&L, position sizing
+- **Performance Tracking**: Daily and historical performance analysis
+- **Market News**: Curated news feed for your holdings
+
+### 🔐 **Authentication & Security**
+- **Google OAuth**: Secure authentication with Google accounts
+- **User Sessions**: Persistent login with session management
+- **Data Privacy**: Your portfolio data is private and secure
+
+### 📱 **Modern UI/UX**
+- **Responsive Design**: Works perfectly on desktop and mobile
+- **Dark Theme**: Beautiful dark mode interface
+- **Smooth Animations**: Polished interactions and transitions
+- **Accessibility**: Built with accessibility best practices
+
+## 🛠 Tech Stack
+
+### **Frontend**
+- **Next.js 15.5.3** - React framework with App Router
+- **TypeScript** - Type-safe development
+- **Tailwind CSS** - Utility-first styling
+- **Framer Motion** - Smooth animations
+- **Recharts** - Interactive charts and visualizations
+- **Radix UI** - Accessible component primitives
+
+### **Backend & Database**
+- **Convex** - Real-time backend with automatic sync
+- **Convex Auth** - Authentication system
+- **Cron Jobs** - Automated tasks and price updates
+
+### **AI & Integrations**
+- **Vapi** - Voice AI assistant
+- **OpenAI GPT-4** - AI-powered research and analysis
+- **Firecrawl** - Web scraping for market data
+- **Real-time APIs** - Stock price and market data
+
+### **Development & Deployment**
+- **ESLint** - Code linting and formatting
+- **TypeScript** - Static type checking
+- **Vercel** - Deployment and hosting
+
+## 🚀 Getting Started
 
 ### Prerequisites
 
-1. Node.js 18+ installed
-2. A Vapi account and public key
+1. **Node.js 18+** installed
+2. **Convex account** - [convex.dev](https://convex.dev)
+3. **Vapi account** - [vapi.ai](https://vapi.ai)
+4. **Firecrawl account** - [firecrawl.dev](https://firecrawl.dev)
+5. **OpenAI API key** - [openai.com](https://openai.com)
+6. **Google OAuth credentials** - [console.cloud.google.com](https://console.cloud.google.com)
 
 ### Environment Setup
 
-1. **Frontend Environment Variables** - Create a `.env.local` file in the root directory:
+#### 1. Frontend Environment Variables
+Create a `.env.local` file in the root directory:
+
 ```bash
-# Convex Configuration (already set up)
+# Convex Configuration
 CONVEX_DEPLOYMENT=your_convex_deployment
 NEXT_PUBLIC_CONVEX_URL=your_convex_url
 
 # Vapi Configuration
 NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_vapi_public_key_here
+NEXT_PUBLIC_VAPI_ASSISTANT_ID=your_vapi_assistant_id
 ```
 
-### Installation
+Note: Your Vapi assistnat should have an MCP tool which is able to call the firecrawl remote MCP server; this is to give the assistant the ability to search the web when provided with the user holdings
 
-1. Install dependencies:
+#### 2. Convex Environment Variables
+Set up your backend environment variables in the Convex dashboard:
+
+```bash
+# Authentication
+GOOGLE_CLIENT_ID=your_google_client_id
+GOOGLE_CLIENT_SECRET=your_google_client_secret
+BETTER_AUTH_SECRET=your_super_secret_key
+
+# AI Services
+OPENAI_API_KEY=your_openai_api_key
+FIRECRAWL_API_KEY=your_firecrawl_api_key
+
+# Email (Optional)
+RESEND_API_KEY=your_resend_api_key
+EMAIL_DOMAIN=your_email_domain
+```
+
+### Installation & Setup
+
+1. **Clone the repository**
+```bash
+git clone <repository-url>
+cd my-quant
+```
+
+2. **Install dependencies**
 ```bash
 npm install
 # or
@@ -39,50 +133,109 @@ yarn install
 pnpm install
 ```
 
-2. Run the development server:
+3. **Set up Convex**
+```bash
+npx convex dev
+```
+
+4. **Run the development server**
 ```bash
 npm run dev
 # or
 yarn dev
 # or
 pnpm dev
-# or
-bun dev
 ```
 
-3. Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+5. **Open the application**
+Navigate to [http://localhost:3000](http://localhost:3000)
 
-### Voice Assistant Setup
+## 📖 Usage Guide
 
-To use the **in-browser voice assistant** feature:
+### Getting Started
+1. **Sign in** with your Google account
+2. **Add your first holding** using the "add holding" button
+3. **Watch real-time updates** as prices refresh automatically
+4. **Explore research** by clicking on any stock in your portfolio
 
-1. Sign up for a Vapi account at [vapi.ai](https://vapi.ai)
-2. Get your **public API key** from the Vapi dashboard
-3. Add it to your `.env.local` file as `NEXT_PUBLIC_VAPI_PUBLIC_KEY` (see Environment Setup above)
-4. Click the "myquant update" button in the portfolio view to start an **in-browser voice call**
+### Voice Assistant
+1. **Click "myquant update"** to start a voice call
+2. **Grant microphone permissions** when prompted
+3. **Ask about your holdings** - "Tell me about NVDA"
+4. **Request research** - "Can you research my top holding?"
+5. **Use call controls** to mute/unmute or end the call
 
-**What happens:**
-- Voice call starts directly in your browser using Vapi Web SDK
-- Uses existing assistant ID: `9f2a635d-b4ac-4a47-bedf-e43050d37cf4`
-- System message is injected with your specific holdings, P&L, and research offer
-- Compact mute/unmute and end call controls
-- Assistant can research any of your stocks using the firecrawl tool
+### Portfolio Management
+- **Add Holdings**: Click "add holding" and enter ticker, shares, and purchase price
+- **View Analytics**: See your P&L, daily changes, and portfolio allocation
+- **Track Performance**: Monitor real-time price updates and performance metrics
+- **Research Stocks**: Click any holding to dive deep into research and news
 
-**Note:** This creates in-browser voice calls, not outbound phone calls. The assistant will speak through your computer's speakers and listen through your microphone.
+## 🏗 Architecture
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Data Flow
+```
+User Interface (Next.js) 
+    ↓
+Convex Backend (Real-time sync)
+    ↓
+External APIs (Stock prices, AI services)
+```
 
-## Learn More
+### Key Components
+- **Portfolio Dashboard** - Main interface with holdings and analytics
+- **Research Engine** - AI-powered stock analysis
+- **Voice Assistant** - Vapi integration for voice interactions
+- **Price Service** - Real-time stock price updates
+- **Authentication** - Google OAuth with Convex Auth
 
-To learn more about Next.js, take a look at the following resources:
+## 🔧 Configuration
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### Convex Functions
+- **Holdings Management** - CRUD operations for portfolio
+- **Price Updates** - Automated price fetching and updates
+- **Research Actions** - AI-powered stock research
+- **News Aggregation** - Market news and updates
+- **Cron Jobs** - Scheduled tasks for data updates
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+### API Integrations
+- **Stock Prices** - Real-time market data
+- **Vapi** - Voice AI assistant
+- **Firecrawl** - Web scraping for research
+- **OpenAI** - AI analysis and insights
 
-## Deploy on Vercel
+## 🚀 Deployment
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+### Vercel Deployment
+1. **Connect your repository** to Vercel
+2. **Set environment variables** in Vercel dashboard
+3. **Deploy** - Automatic deployments on push to main
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+### Convex Deployment
+1. **Run** `npx convex deploy`
+2. **Update environment variables** for production
+3. **Verify** all functions are deployed correctly
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/amazing-feature`)
+3. Commit your changes (`git commit -m 'Add amazing feature'`)
+4. Push to the branch (`git push origin feature/amazing-feature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🙏 Acknowledgments
+
+- **Convex** - For the amazing real-time backend
+- **Vapi** - For voice AI capabilities
+- **Next.js** - For the incredible React framework
+- **Vercel** - For seamless deployment
+- **OpenAI** - For AI-powered insights
+
+---
+
+Built with ❤️ for modern portfolio management
