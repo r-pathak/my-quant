@@ -1,8 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from 'react';
-import { useAction } from 'convex/react';
-import { api } from '../../convex/_generated/api';
+import Vapi from '@vapi-ai/web';
 
 interface Holding {
   _id: string;
@@ -27,7 +26,7 @@ interface CallState {
 }
 
 export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
-  const createVapiCall = useAction(api.vapiActions.createVapiCall);
+  const [vapi, setVapi] = useState<Vapi | null>(null);
   const [callState, setCallState] = useState<CallState>({
     isCallActive: false,
     isMuted: false,
@@ -35,6 +34,42 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
     error: null,
     callId: null,
   });
+
+  // Initialize Vapi instance with proxy URL
+  useEffect(() => {
+    // Use a dummy public key since we're routing through our proxy
+    const vapiInstance = new Vapi('dummy-key', 'https://fastidious-gnu-222.convex.cloud');
+    setVapi(vapiInstance);
+
+    // Set up event listeners
+    vapiInstance.on('call-start', () => {
+      setCallState(prev => ({ ...prev, isCallActive: true, isConnecting: false, error: null }));
+    });
+
+    vapiInstance.on('call-end', () => {
+      setCallState(prev => ({ ...prev, isCallActive: false, isConnecting: false, error: null }));
+    });
+
+    vapiInstance.on('error', (error) => {
+      setCallState(prev => ({ ...prev, error: error.message || 'An error occurred', isConnecting: false }));
+    });
+
+    vapiInstance.on('speech-start', () => {
+      console.log('Assistant is speaking');
+    });
+
+    vapiInstance.on('speech-end', () => {
+      console.log('Assistant finished speaking');
+    });
+
+    vapiInstance.on('message', (message) => {
+      console.log('Message received:', message);
+    });
+
+    return () => {
+      vapiInstance.stop();
+    };
+  }, []);
 
   // Generate system message based on holdings
   const generateSystemMessage = useCallback(() => {
@@ -67,24 +102,30 @@ IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The t
 
   // Start a call
   const startCall = useCallback(async () => {
-    if (callState.isCallActive || callState.isConnecting) return;
+    if (!vapi || callState.isCallActive || callState.isConnecting) return;
 
     setCallState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      const result = await createVapiCall({ holdings });
-      
-      if (result.success) {
-        setCallState(prev => ({ 
-          ...prev, 
-          isCallActive: true, 
-          isConnecting: false, 
-          callId: result.callId,
-          error: null 
-        }));
-      } else {
-        throw new Error(result.message || 'Failed to create call');
-      }
+      // For now, start with a basic call and we'll handle the holdings data in the proxy
+      // The proxy will generate the system message based on the user's portfolio
+      await vapi.start({
+        // Basic assistant config that our proxy will enhance
+        model: {
+          provider: "openai",
+          model: "gpt-4o",
+          messages: [
+            {
+              role: "system",
+              content: "You are a finance expert. Please provide portfolio insights.",
+            },
+          ],
+        },
+        voice: {
+          provider: "minimax",
+          voiceId: "moss_audio_82ebf67c-78c8-11f0-8e8e-36b92fbb4f95",
+        },
+      });
     } catch (error) {
       setCallState(prev => ({ 
         ...prev, 
@@ -92,35 +133,36 @@ IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The t
         isConnecting: false 
       }));
     }
-  }, [callState.isCallActive, callState.isConnecting, createVapiCall, holdings]);
+  }, [vapi, callState.isCallActive, callState.isConnecting, holdings]);
 
   // Stop a call
   const stopCall = useCallback(() => {
-    if (callState.isCallActive) {
-      setCallState(prev => ({ 
-        ...prev, 
-        isCallActive: false, 
-        isMuted: false,
-        callId: null 
-      }));
+    if (vapi && callState.isCallActive) {
+      vapi.stop();
     }
-  }, [callState.isCallActive]);
+  }, [vapi, callState.isCallActive]);
 
   // Toggle mute
   const toggleMute = useCallback(() => {
-    if (callState.isCallActive) {
+    if (vapi && callState.isCallActive) {
       const newMutedState = !callState.isMuted;
+      vapi.setMuted(newMutedState);
       setCallState(prev => ({ ...prev, isMuted: newMutedState }));
     }
-  }, [callState.isCallActive, callState.isMuted]);
+  }, [vapi, callState.isCallActive, callState.isMuted]);
 
-  // Send a message (placeholder - would need additional Convex action)
+  // Send a message
   const sendMessage = useCallback((message: string) => {
-    if (callState.isCallActive) {
-      console.log('Sending message:', message);
-      // TODO: Implement message sending via Convex action
+    if (vapi && callState.isCallActive) {
+      vapi.send({
+        type: 'add-message',
+        message: {
+          role: 'user',
+          content: message,
+        },
+      });
     }
-  }, [callState.isCallActive]);
+  }, [vapi, callState.isCallActive]);
 
   return {
     ...callState,

@@ -56,14 +56,20 @@ bun dev
 
 ### Voice Assistant Setup
 
-To use the voice assistant feature:
+To use the **in-browser voice assistant** feature:
 
 1. Sign up for a Vapi account at [vapi.ai](https://vapi.ai)
 2. Get your **private API key** from the Vapi dashboard
 3. Add it to your Convex environment variables as `VAPI_API_KEY` (see Environment Setup above)
-4. Click the "myquant update" button in the portfolio view to start a voice call
+4. Click the "myquant update" button in the portfolio view to start an **in-browser voice call**
 
-The assistant will provide personalized market updates based on your current holdings. The call is handled securely through your Convex backend, keeping your private API key safe.
+**What happens:**
+- Voice call starts directly in your browser (no phone calls)
+- Assistant provides personalized market updates based on your current holdings
+- You can mute/unmute and end the call using the on-screen controls
+- All calls are handled securely through your Convex backend proxy
+
+**Note:** This creates in-browser voice calls, not outbound phone calls. The assistant will speak through your computer's speakers and listen through your microphone.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
