@@ -52,8 +52,49 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
       
       // Inject system message immediately when call starts
       console.log('📤 Attempting immediate message injection on call-start...');
-      const systemMessage = generateSystemMessage();
-      console.log('📝 System message for injection:', systemMessage);
+      // Use the current holdings from the component state, not the stale closure
+      const currentHoldings = holdings || [];
+      console.log('📊 Current holdings for injection:', currentHoldings);
+      
+      // Generate fresh system message with current holdings
+      const generateFreshSystemMessage = () => {
+        if (!currentHoldings || currentHoldings.length === 0) {
+          return "You are a finance expert. Ask the user about their portfolio and offer to research any stocks they're interested in using the firecrawl tool.";
+        }
+
+        // Calculate portfolio details
+        const portfolioDetails = currentHoldings.map(holding => {
+          const currentPrice = holding.currentPrice || holding.boughtPrice;
+          const costBasis = holding.unitsHeld * holding.boughtPrice;
+          const currentValue = holding.unitsHeld * currentPrice;
+          const profit = currentValue - costBasis;
+          const profitPercent = (profit / costBasis) * 100;
+          
+          return {
+            ticker: holding.ticker,
+            company: holding.companyName,
+            shares: holding.unitsHeld,
+            currentPrice: currentPrice,
+            profit: profit,
+            profitPercent: profitPercent
+          };
+        });
+
+        const totalValue = portfolioDetails.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
+        const totalProfit = portfolioDetails.reduce((sum, h) => sum + h.profit, 0);
+        const totalProfitPercent = (totalProfit / (totalValue - totalProfit)) * 100;
+
+        const holdingsList = portfolioDetails.map(h => 
+          `${h.ticker} (${h.shares} shares @ $${h.currentPrice.toFixed(2)}) - ${h.profit >= 0 ? '+' : ''}$${h.profit.toFixed(0)} (${h.profitPercent >= 0 ? '+' : ''}${h.profitPercent.toFixed(1)}%)`
+        ).join(', ');
+
+        return `You are a finance expert. The user's portfolio: ${holdingsList}. Total value: $${totalValue.toFixed(0)}, Total P&L: ${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(0)} (${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%). 
+
+Mention their specific holdings and ask if they want you to research any of these stocks using the firecrawl tool. Keep responses conversational and concise.`;
+      };
+      
+      const systemMessage = generateFreshSystemMessage();
+      console.log('📝 Fresh system message for injection:', systemMessage);
       
       try {
         vapiInstance.send({
@@ -148,34 +189,8 @@ Mention their specific holdings and ask if they want you to research any of thes
       await vapi.start(assistantId);
       console.log('✅ Call started successfully');
       
-      // Generate the system message
-      const systemMessage = generateSystemMessage();
-      console.log('📝 Generated system message:', systemMessage);
-      
-      // Immediately inject system message with portfolio context
-      setTimeout(() => {
-        console.log('⏰ Timeout triggered - attempting message injection...');
-        console.log('🔍 Vapi instance exists:', !!vapi);
-        console.log('🔍 Call is active:', callState.isCallActive);
-        
-        if (vapi && callState.isCallActive) {
-          console.log('📤 Sending system message injection...');
-          try {
-            vapi.send({
-              type: 'add-message',
-              message: {
-                role: 'system',
-                content: systemMessage,
-              },
-            });
-            console.log('✅ System message sent successfully');
-          } catch (injectionError) {
-            console.error('❌ Failed to inject system message:', injectionError);
-          }
-        } else {
-          console.warn('⚠️ Cannot inject message - vapi or call not ready');
-        }
-      }, 1000); // Wait 1 second for call to establish
+      // Message injection will happen via call-start event listener
+      console.log('📝 Message injection will be handled by call-start event');
       
     } catch (error) {
       console.error('❌ Failed to start call:', error);
