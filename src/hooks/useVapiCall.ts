@@ -108,7 +108,14 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
       }
       prompt += `" 
 
-When researching stocks using the firecrawl tool, DO NOT robotically list article summaries. Instead, weave the news into a flowing, engaging story about the company's outlook. Synthesize multiple sources into a cohesive narrative that tells the bigger picture. End with a clear conclusion about the investment outlook from an investor's perspective - bullish, bearish, or mixed - and why.`;
+When researching stocks using the firecrawl tool:
+- Use natural, human-spoken company names (e.g., "Apple" not "Apple Inc.", "Google" not "Alphabet Inc.")
+- The tool should return 3-4 articles, and you can summarise the findings from each of them, as if a natural response to whats going on with the stock
+- DO NOT exhaustively list things in a robotic manner, synthesise and condense the info
+- Do not numerate and list out each news item, that feels very boring and robotic
+- Prioritise the most recent news and go through it as a seamless soliloquy, rather than some list by list robotic bs
+- At the end of your summary, talk about how the news will impact price
+- Weave everything into a flowing, engaging story about the company's outlook with a clear investment conclusion (bullish, bearish, or mixed)`;
     }
 
     return prompt;

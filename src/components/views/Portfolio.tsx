@@ -1,6 +1,6 @@
 "use client";
 
-import { IconTrendingUp, IconTrendingDown, IconPercentage, IconRefresh, IconPlus, IconPhoneSpark, IconPhone, IconPhoneOff, IconMicrophone, IconMicrophoneOff, IconX } from "@tabler/icons-react";
+import { IconTrendingUp, IconTrendingDown, IconPercentage, IconRefresh, IconPlus, IconPhoneSpark, IconPhone, IconPhoneOff, IconMicrophone, IconMicrophoneOff, IconX, IconMail } from "@tabler/icons-react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useEffect, useState, useCallback } from "react";
@@ -15,12 +15,14 @@ export default function Portfolio() {
   const portfolioSummary = useQuery(api.holdings.getPortfolioSummary);
   const updateAllPrices = useAction(api.priceActions.updateAllPrices);
   const getDailyPriceChanges = useAction(api.priceActions.getDailyPriceChanges);
+  const sendNewsletter = useAction(api.newsletterActions.sendMyNewsletter);
 
   const [isUpdatingPrices, setIsUpdatingPrices] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<Date | null>(null);
   const [autoRefreshEnabled] = useState(true);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [dailyChanges, setDailyChanges] = useState<{ [key: string]: { change: number; changePercent: number } }>({});
+  const [isSendingNewsletter, setIsSendingNewsletter] = useState(false);
 
   // Vapi call functionality
   const {
@@ -149,6 +151,21 @@ export default function Portfolio() {
       setIsUpdatingPrices(false);
     }
   };
+
+  const handleSendNewsletter = async () => {
+    setIsSendingNewsletter(true);
+    try {
+      console.log('Sending newsletter...');
+      const result = await sendNewsletter();
+      console.log('Newsletter result:', result);
+      alert('Newsletter sent successfully! Check your email.');
+    } catch (error) {
+      console.error('Error sending newsletter:', error);
+      alert('Failed to send newsletter. Please try again.');
+    } finally {
+      setIsSendingNewsletter(false);
+    }
+  };
   return (
     <div className="flex flex-col h-full space-y-8 relative">
       {/* Header */}
@@ -218,6 +235,24 @@ export default function Portfolio() {
               </button>
             </div>
           )}
+          
+          <Button
+            onClick={handleSendNewsletter}
+            disabled={isSendingNewsletter}
+            borderRadius="0.5rem"
+            className="bg-gradient-to-r cursor-pointer from-blue-900 to-indigo-900 text-white font-mono border-0 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+            borderClassName="bg-gradient-to-r from-blue-400/20 to-indigo-400/20"
+            duration={4000}
+          >
+            <div className="flex items-center gap-2">
+              {isSendingNewsletter ? (
+                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+              ) : (
+                <IconMail className="h-5 w-5" />
+              )}
+              {isSendingNewsletter ? 'sending...' : 'send me a newsletter'}
+            </div>
+          </Button>
           
           <button
             onClick={() => setIsAddFormOpen(true)}

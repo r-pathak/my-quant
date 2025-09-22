@@ -15,6 +15,38 @@ const openai = new OpenAI({
 });
 const firecrawl = new Firecrawl({ apiKey: process.env.FIRECRAWL_API_KEY });
 
+// Manual trigger for single user newsletter
+export const sendUserNewsletter = internalAction({
+  args: {
+    userId: v.id("users"),
+  },
+  handler: async (ctx, { userId }): Promise<{ success: boolean; message: string }> => {
+    console.log(`📧 Manually triggering newsletter for user: ${userId}`);
+    
+    try {
+      // Get user details
+      const user = await ctx.runQuery(internal.weeklyDigestQueries.getUserById, { userId });
+      
+      if (!user) {
+        throw new Error("User not found");
+      }
+
+      // Process the user's digest
+      await ctx.runAction(internal.weeklyDigestEngine.processUserDigest, {
+        userId: user._id,
+        userEmail: user.email || "",
+        userName: user.name || "",
+      });
+
+      console.log(`✅ Manual newsletter sent successfully to: ${user.email}`);
+      return { success: true, message: `Newsletter sent to ${user.email}` };
+    } catch (error) {
+      console.error(`❌ Failed to send manual newsletter:`, error);
+      throw error;
+    }
+  },
+});
+
 // Main cron job function
 export const sendWeeklyDigests = internalAction({
   args: {},
@@ -96,7 +128,7 @@ export const processUserDigest = internalAction({
 
       // 5. Process holdings with AI analysis
       const holdingsWithAnalysis = await Promise.all(
-        topHoldings.map(async (holding) => {
+        topHoldings.map(async (holding: any) => {
           const currentPrice = priceData[holding.ticker]?.price || holding.boughtPrice;
           const weeklyChange = priceData[holding.ticker]?.weeklyChange || 0; // Actual weekly price change
           const weeklyChangePercent = priceData[holding.ticker]?.weeklyChangePercent || 0; // Actual weekly %
@@ -139,7 +171,7 @@ export const processUserDigest = internalAction({
 
       // 6. Process research stocks with AI analysis
       const researchWithAnalysis = await Promise.all(
-        researchStocks.map(async (stock) => {
+        researchStocks.map(async (stock: any) => {
           const currentPrice = priceData[stock.ticker]?.price || stock.currentPrice || 0;
           const weeklyChange = priceData[stock.ticker]?.weeklyChange || stock.change || 0;
           const weeklyChangePercent = priceData[stock.ticker]?.weeklyChangePercent || stock.changePercent || 0;
