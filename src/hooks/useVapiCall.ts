@@ -45,69 +45,10 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
     const vapiInstance = new Vapi(vapiPublicKey);
     setVapi(vapiInstance);
 
-    // Set up event listeners
+    // Set up basic event listeners (without holdings-dependent logic)
     vapiInstance.on('call-start', () => {
       console.log('🎉 Call started event triggered');
       setCallState(prev => ({ ...prev, isCallActive: true, isConnecting: false, error: null }));
-      
-      // Inject system message immediately when call starts
-      console.log('📤 Attempting immediate message injection on call-start...');
-      // Use the current holdings from the component state, not the stale closure
-      const currentHoldings = holdings || [];
-      console.log('📊 Current holdings for injection:', currentHoldings);
-      
-      // Generate fresh system message with current holdings
-      const generateFreshSystemMessage = () => {
-        if (!currentHoldings || currentHoldings.length === 0) {
-          return "You are a finance expert. Ask the user about their portfolio and offer to research any stocks they're interested in using the firecrawl tool.";
-        }
-
-        // Calculate portfolio details
-        const portfolioDetails = currentHoldings.map(holding => {
-          const currentPrice = holding.currentPrice || holding.boughtPrice;
-          const costBasis = holding.unitsHeld * holding.boughtPrice;
-          const currentValue = holding.unitsHeld * currentPrice;
-          const profit = currentValue - costBasis;
-          const profitPercent = (profit / costBasis) * 100;
-          
-          return {
-            ticker: holding.ticker,
-            company: holding.companyName,
-            shares: holding.unitsHeld,
-            currentPrice: currentPrice,
-            profit: profit,
-            profitPercent: profitPercent
-          };
-        });
-
-        const totalValue = portfolioDetails.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
-        const totalProfit = portfolioDetails.reduce((sum, h) => sum + h.profit, 0);
-        const totalProfitPercent = (totalProfit / (totalValue - totalProfit)) * 100;
-
-        const holdingsList = portfolioDetails.map(h => 
-          `${h.ticker} (${h.shares} shares @ $${h.currentPrice.toFixed(2)}) - ${h.profit >= 0 ? '+' : ''}$${h.profit.toFixed(0)} (${h.profitPercent >= 0 ? '+' : ''}${h.profitPercent.toFixed(1)}%)`
-        ).join(', ');
-
-        return `You are a finance expert. The user's portfolio: ${holdingsList}. Total value: $${totalValue.toFixed(0)}, Total P&L: ${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(0)} (${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%). 
-
-Mention their specific holdings and ask if they want you to research any of these stocks using the firecrawl tool. Keep responses conversational and concise.`;
-      };
-      
-      const systemMessage = generateFreshSystemMessage();
-      console.log('📝 Fresh system message for injection:', systemMessage);
-      
-      try {
-        vapiInstance.send({
-          type: 'add-message',
-          message: {
-            role: 'system',
-            content: systemMessage,
-          },
-        });
-        console.log('✅ System message sent via call-start event');
-      } catch (injectionError) {
-        console.error('❌ Failed to inject system message via call-start:', injectionError);
-      }
     });
 
     vapiInstance.on('call-end', () => {
@@ -185,12 +126,41 @@ Mention their specific holdings and ask if they want you to research any of thes
       const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '';
       console.log('📞 Assistant ID:', assistantId);
       
+      // Set up a one-time call-start listener with current holdings
+      const handleCallStart = () => {
+        console.log('🎉 Call started event triggered');
+        setCallState(prev => ({ ...prev, isCallActive: true, isConnecting: false, error: null }));
+        
+        // Inject system message with current holdings
+        console.log('📤 Attempting immediate message injection on call-start...');
+        console.log('📊 Current holdings for injection:', holdings);
+        
+        const systemMessage = generateSystemMessage();
+        console.log('📝 System message for injection:', systemMessage);
+        
+        try {
+          vapi.send({
+            type: 'add-message',
+            message: {
+              role: 'system',
+              content: systemMessage,
+            },
+          });
+          console.log('✅ System message sent via call-start event');
+        } catch (injectionError) {
+          console.error('❌ Failed to inject system message via call-start:', injectionError);
+        }
+        
+        // Remove the one-time listener
+        vapi.off('call-start', handleCallStart);
+      };
+      
+      // Add the one-time listener
+      vapi.on('call-start', handleCallStart);
+      
       // Start call with existing assistant ID
       await vapi.start(assistantId);
       console.log('✅ Call started successfully');
-      
-      // Message injection will happen via call-start event listener
-      console.log('📝 Message injection will be handled by call-start event');
       
     } catch (error) {
       console.error('❌ Failed to start call:', error);
@@ -200,7 +170,7 @@ Mention their specific holdings and ask if they want you to research any of thes
         isConnecting: false 
       }));
     }
-  }, [vapi, callState.isCallActive, callState.isConnecting, generateSystemMessage]);
+  }, [vapi, callState.isCallActive, callState.isConnecting, holdings, generateSystemMessage]);
 
   // Stop a call
   const stopCall = useCallback(() => {
