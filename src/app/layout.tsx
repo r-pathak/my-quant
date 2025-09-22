@@ -11,6 +11,7 @@ import {
   IconSettings,
 } from "@tabler/icons-react";
 import Image from "next/image";
+import { Toaster } from "@/components/ui/sonner";
 
 const jetbrainsMono = JetBrains_Mono({
   variable: "--font-jetbrains-mono",
@@ -84,6 +85,7 @@ export default function RootLayout({
             </div>
           </AuthWrapper>
         </ConvexClientProvider>
+        <Toaster />
       </body>
     </html>
   );

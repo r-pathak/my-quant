@@ -9,6 +9,7 @@ import AddHoldingForm from "../ui/add-holding-form";
 import NewsCarousel from "../ui/news-carousel";
 import { Button } from "../ui/moving-border";
 import { useVapiCall } from "../../hooks/useVapiCall";
+import { toast } from "sonner";
 
 export default function Portfolio() {
   const holdings = useQuery(api.holdings.getAll);
@@ -22,7 +23,6 @@ export default function Portfolio() {
   const [autoRefreshEnabled] = useState(true);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [dailyChanges, setDailyChanges] = useState<{ [key: string]: { change: number; changePercent: number } }>({});
-  const [isSendingNewsletter, setIsSendingNewsletter] = useState(false);
 
   // Vapi call functionality
   const {
@@ -153,18 +153,14 @@ export default function Portfolio() {
   };
 
   const handleSendNewsletter = async () => {
-    setIsSendingNewsletter(true);
-    try {
-      console.log('Sending newsletter...');
-      const result = await sendNewsletter();
-      console.log('Newsletter result:', result);
-      alert('Newsletter sent successfully! Check your email.');
-    } catch (error) {
-      console.error('Error sending newsletter:', error);
-      alert('Failed to send newsletter. Please try again.');
-    } finally {
-      setIsSendingNewsletter(false);
-    }
+    toast.promise(
+      sendNewsletter(),
+      {
+        loading: 'Preparing your email update...',
+        success: 'Email update sent! Check your inbox in a few minutes.',
+        error: 'Failed to send email update. Please try again.',
+      }
+    );
   };
   return (
     <div className="flex flex-col h-full space-y-8 relative">
@@ -214,7 +210,7 @@ export default function Portfolio() {
                 ) : (
                   <IconPhoneSpark className="h-5 w-5" />
                 )}
-                {isConnecting ? 'connecting...' : 'myquant update'}
+                {isConnecting ? 'connecting...' : 'call myquant'}
               </div>
             </Button>
           ) : (
@@ -238,19 +234,14 @@ export default function Portfolio() {
           
           <Button
             onClick={handleSendNewsletter}
-            disabled={isSendingNewsletter}
             borderRadius="0.5rem"
-            className="bg-gradient-to-r cursor-pointer from-blue-900 to-indigo-900 text-white font-mono border-0 hover:from-blue-700 hover:to-indigo-700 shadow-lg hover:shadow-blue-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
-            borderClassName="bg-gradient-to-r from-blue-400/20 to-indigo-400/20"
-            duration={4000}
+            className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
+            borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
+            duration={6000}
           >
             <div className="flex items-center gap-2">
-              {isSendingNewsletter ? (
-                <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
-              ) : (
-                <IconMail className="h-5 w-5" />
-              )}
-              {isSendingNewsletter ? 'sending...' : 'send me a newsletter'}
+              <IconMail className="h-5 w-5" />
+              email update
             </div>
           </Button>
           
