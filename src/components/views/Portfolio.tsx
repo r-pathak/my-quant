@@ -236,7 +236,7 @@ export default function Portfolio() {
             onClick={handleSendNewsletter}
             borderRadius="0.5rem"
             className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
-            borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
+            borderClassName="bg-gradient-to-r hidden from-purple-400/20 to-pink-400/20"
             duration={6000}
           >
             <div className="flex items-center gap-2">
