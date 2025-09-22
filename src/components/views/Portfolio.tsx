@@ -153,14 +153,18 @@ export default function Portfolio() {
   };
 
   const handleSendNewsletter = async () => {
-    toast.promise(
-      sendNewsletter(),
-      {
-        loading: 'Preparing your email update...',
-        success: 'Email update sent! Check your inbox in a few minutes.',
-        error: 'Failed to send email update. Please try again.',
-      }
-    );
+    // Show immediate confirmation
+    toast.success("We'll email you in a couple minutes", {
+      icon: "✓",
+    });
+    
+    // Send email in background and show result
+    try {
+      await sendNewsletter();
+      toast.success("Email update sent successfully!");
+    } catch (error) {
+      toast.error("Failed to send email update. Please try again.");
+    }
   };
   return (
     <div className="flex flex-col h-full space-y-8 relative">

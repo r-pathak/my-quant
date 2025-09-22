@@ -90,4 +90,17 @@
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 4;
   }
+  
+  /* Sonner toast overrides */
+  [data-sonner-toast] {
+    background-color: #000000 !important;
+    border: 1px solid rgba(255, 255, 255, 0.2) !important;
+    color: white !important;
+    font-family: var(--font-jetbrains-mono) !important;
+  }
+  
+  [data-sonner-toast] [data-description] {
+    color: #cbd5e1 !important;
+    font-family: var(--font-jetbrains-mono) !important;
+  }
 }
