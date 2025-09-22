@@ -201,31 +201,21 @@ export default function Portfolio() {
               </div>
             </Button>
           ) : (
-            <div className="flex items-center gap-2">
-              <Button
+            <div className="flex items-center gap-1">
+              <button
                 onClick={toggleMute}
-                borderRadius="0.5rem"
-                className="bg-gradient-to-r cursor-pointer from-orange-900 to-red-900 text-white font-mono border-0 hover:from-orange-700 hover:to-red-700 shadow-lg"
-                borderClassName="bg-gradient-to-r from-orange-400/20 to-red-400/20"
-                duration={4000}
+                className="flex h-8 cursor-pointer items-center gap-1 px-2 py-1 bg-orange-500/20 hover:bg-orange-500/30 border border-orange-500/40 rounded-lg transition-colors text-xs font-mono"
               >
-                <div className="flex items-center gap-2">
-                  {isMuted ? <IconMicrophoneOff className="h-4 w-4" /> : <IconMicrophone className="h-4 w-4" />}
-                  {isMuted ? 'unmute' : 'mute'}
-                </div>
-              </Button>
-              <Button
+                {isMuted ? <IconMicrophoneOff className="h-3 w-3" /> : <IconMicrophone className="h-3 w-3" />}
+                {isMuted ? 'unmute' : 'mute'}
+              </button>
+              <button
                 onClick={stopCall}
-                borderRadius="0.5rem"
-                className="bg-gradient-to-r cursor-pointer from-red-900 to-red-900 text-white font-mono border-0 hover:from-red-700 hover:to-red-700 shadow-lg"
-                borderClassName="bg-gradient-to-r from-red-400/20 to-red-400/20"
-                duration={4000}
+                className="flex h-8 cursor-pointer items-center gap-1 px-2 py-1 bg-red-500/20 hover:bg-red-500/30 border border-red-500/40 rounded-lg transition-colors text-xs font-mono"
               >
-                <div className="flex items-center gap-2">
-                  <IconPhoneOff className="h-4 w-4" />
-                  end call
-                </div>
-              </Button>
+                <IconPhoneOff className="h-3 w-3" />
+                end
+              </button>
             </div>
           )}
           

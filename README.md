@@ -64,8 +64,9 @@ To use the **in-browser voice assistant** feature:
 **What happens:**
 - Voice call starts directly in your browser using Vapi Web SDK
 - Uses existing assistant ID: `9f2a635d-b4ac-4a47-bedf-e43050d37cf4`
-- System message is dynamically injected with your portfolio context
-- You can mute/unmute and end the call using the on-screen controls
+- System message is injected with your specific holdings, P&L, and research offer
+- Compact mute/unmute and end call controls
+- Assistant can research any of your stocks using the firecrawl tool
 
 **Note:** This creates in-browser voice calls, not outbound phone calls. The assistant will speak through your computer's speakers and listen through your microphone.
 

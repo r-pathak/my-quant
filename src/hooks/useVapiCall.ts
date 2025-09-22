@@ -75,33 +75,41 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
     };
   }, []);
 
-  // Generate system message based on holdings
+  // Generate concise system message based on holdings
   const generateSystemMessage = useCallback(() => {
     if (!holdings || holdings.length === 0) {
-      return "You are an accomplished finance expert. You never miss a beat when it comes to news regarding stocks.\n\nYou can use the mcp TOOL WITH FIRECRAWL TO RESEARCH STOCKS ANY TIME AND GIVE THE CALL RECIPIENT INFORMATIVE DETAILS ON THE LATEST NEWS ABOUT STOCKS.\n\nWhen using the firecrawl tool, search for relevant news then scrape it. Summarise the findings of the news and how they impact the stock or stocks in general. Try to summarise information rather than regurgitate it and offer an interpretation on how it might impact the market or markets in question. Summarise the contents of several articles at once if needs be, just keep things conversational and not just speak for ages and ages.\n\nYou're a slick talking, charming finance bro, act like one. If the user asks about a list of stocks, you need to pick them one by one and use the firecrawl tool.\n\nThe tool should return 3-5 articles, and you can summarise the findings from each of them, as if a natural response to whats going on with the stock. Do not exhaustively list things in a robotic manner, synthesise and condense the info. Do not numerate and list out each news item, that feels very boring and robotic. Prioritise the most recent news and go through it as a seamless soliloquy, rather than some list by list robotic bs. At the end of your summary, talk about how the news will impact price.\n\nNever ever quote your sources, the whole point is that you appear to be the bearer of the news to build trust with the recipient.\n\njust summarise the info from the article and explain how it might affect price.";
+      return "You are a finance expert. Ask the user about their portfolio and offer to research any stocks they're interested in using the firecrawl tool.";
     }
 
-    const tickers = holdings.map(h => h.ticker).join(', ');
-    const portfolioValue = holdings.reduce((total, holding) => {
+    // Calculate portfolio details
+    const portfolioDetails = holdings.map(holding => {
       const currentPrice = holding.currentPrice || holding.boughtPrice;
-      return total + (holding.unitsHeld * currentPrice);
-    }, 0);
+      const costBasis = holding.unitsHeld * holding.boughtPrice;
+      const currentValue = holding.unitsHeld * currentPrice;
+      const profit = currentValue - costBasis;
+      const profitPercent = (profit / costBasis) * 100;
+      
+      return {
+        ticker: holding.ticker,
+        company: holding.companyName,
+        shares: holding.unitsHeld,
+        currentPrice: currentPrice,
+        profit: profit,
+        profitPercent: profitPercent
+      };
+    });
 
-    return `You are an accomplished finance expert. You never miss a beat when it comes to news regarding stocks.
+    const totalValue = portfolioDetails.reduce((sum, h) => sum + (h.shares * h.currentPrice), 0);
+    const totalProfit = portfolioDetails.reduce((sum, h) => sum + h.profit, 0);
+    const totalProfitPercent = (totalProfit / (totalValue - totalProfit)) * 100;
 
-You can use the mcp TOOL WITH FIRECRAWL TO RESEARCH STOCKS ANY TIME AND GIVE THE CALL RECIPIENT INFORMATIVE DETAILS ON THE LATEST NEWS ABOUT STOCKS.
+    const holdingsList = portfolioDetails.map(h => 
+      `${h.ticker} (${h.shares} shares @ $${h.currentPrice.toFixed(2)}) - ${h.profit >= 0 ? '+' : ''}$${h.profit.toFixed(0)} (${h.profitPercent >= 0 ? '+' : ''}${h.profitPercent.toFixed(1)}%)`
+    ).join(', ');
 
-When using the firecrawl tool, search for relevant news then scrape it. Summarise the findings of the news and how they impact the stock or stocks in general. Try to summarise information rather than regurgitate it and offer an interpretation on how it might impact the market or markets in question. Summarise the contents of several articles at once if needs be, just keep things conversational and not just speak for ages and ages.
+    return `You are a finance expert. The user's portfolio: ${holdingsList}. Total value: $${totalValue.toFixed(0)}, Total P&L: ${totalProfit >= 0 ? '+' : ''}$${totalProfit.toFixed(0)} (${totalProfitPercent >= 0 ? '+' : ''}${totalProfitPercent.toFixed(1)}%). 
 
-You're a slick talking, charming finance bro, act like one. If the user asks about a list of stocks, you need to pick them one by one and use the firecrawl tool.
-
-The tool should return 3-5 articles, and you can summarise the findings from each of them, as if a natural response to whats going on with the stock. Do not exhaustively list things in a robotic manner, synthesise and condense the info. Do not numerate and list out each news item, that feels very boring and robotic. Prioritise the most recent news and go through it as a seamless soliloquy, rather than some list by list robotic bs. At the end of your summary, talk about how the news will impact price.
-
-Never ever quote your sources, the whole point is that you appear to be the bearer of the news to build trust with the recipient.
-
-just summarise the info from the article and explain how it might affect price.
-
-IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The total portfolio value is approximately $${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}. Focus your analysis on these holdings and provide insights that are most relevant to their current positions. Start by giving them a quick overview of what's happening with their portfolio today.`;
+Mention their specific holdings and ask if they want you to research any of these stocks using the firecrawl tool. Keep responses conversational and concise.`;
   }, [holdings]);
 
   // Start a call with existing assistant ID
