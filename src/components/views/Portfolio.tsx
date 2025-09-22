@@ -1,6 +1,6 @@
 "use client";
 
-import { IconTrendingUp, IconTrendingDown, IconPercentage, IconRefresh, IconPlus, IconPhoneSpark } from "@tabler/icons-react";
+import { IconTrendingUp, IconTrendingDown, IconPercentage, IconRefresh, IconPlus, IconPhoneSpark, IconPhone, IconPhoneOff, IconMicrophone, IconMicrophoneOff, IconX } from "@tabler/icons-react";
 import { useQuery, useAction } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useEffect, useState, useCallback } from "react";
@@ -8,6 +8,7 @@ import HoldingsPieChart from "../ui/holdings-pie-chart";
 import AddHoldingForm from "../ui/add-holding-form";
 import NewsCarousel from "../ui/news-carousel";
 import { Button } from "../ui/moving-border";
+import { useVapiCall } from "../../hooks/useVapiCall";
 
 export default function Portfolio() {
   const holdings = useQuery(api.holdings.getAll);
@@ -20,6 +21,21 @@ export default function Portfolio() {
   const [autoRefreshEnabled] = useState(true);
   const [isAddFormOpen, setIsAddFormOpen] = useState(false);
   const [dailyChanges, setDailyChanges] = useState<{ [key: string]: { change: number; changePercent: number } }>({});
+
+  // Vapi call functionality
+  const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
+  const {
+    isCallActive,
+    isMuted,
+    isConnecting,
+    error: callError,
+    startCall,
+    stopCall,
+    toggleMute,
+  } = useVapiCall({
+    holdings: holdings || [],
+    publicKey: vapiPublicKey,
+  });
 
   const fetchDailyChanges = useCallback(async () => {
     if (holdings && holdings.length > 0) {
@@ -148,6 +164,12 @@ export default function Portfolio() {
               }`}>
               {todaysPnLPercentage >= 0 ? '+' : ''}{todaysPnLPercentage.toFixed(2)}% today
             </div>
+            {isCallActive && (
+              <div className="px-3 py-1 rounded-full text-sm font-mono font-medium bg-purple-500/20 text-purple-400 border border-purple-500/30 flex items-center gap-2">
+                <div className="w-2 h-2 bg-purple-400 rounded-full animate-pulse" />
+                call active
+              </div>
+            )}
           </div>
 
           {lastUpdated && (
@@ -155,24 +177,59 @@ export default function Portfolio() {
               last updated: {lastUpdated.toLocaleTimeString()}
             </p>
           )}
+          {callError && (
+            <p className="text-xs text-red-400 mt-1 font-mono">
+              call error: {callError}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-4">
-          <Button
-            onClick={() => {
-              // TODO: Implement myquant Update agent call
-              console.log('myquant Update clicked - Agent call feature coming soon!');
-              alert('myquant Update: Agent call feature coming soon! 📞');
-            }}
-            borderRadius="0.5rem"
-            className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25"
-            borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
-            duration={4000}
-          >
-            <div className="flex items-center gap-2"> 
-              <IconPhoneSpark className="h-5 w-5" />
-              myquant update
+          {!isCallActive ? (
+            <Button
+              onClick={startCall}
+              disabled={isConnecting || !vapiPublicKey}
+              borderRadius="0.5rem"
+              className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
+              borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
+              duration={4000}
+            >
+              <div className="flex items-center gap-2"> 
+                {isConnecting ? (
+                  <div className="animate-spin h-5 w-5 border-2 border-white border-t-transparent rounded-full" />
+                ) : (
+                  <IconPhoneSpark className="h-5 w-5" />
+                )}
+                {isConnecting ? 'connecting...' : 'myquant update'}
+              </div>
+            </Button>
+          ) : (
+            <div className="flex items-center gap-2">
+              <Button
+                onClick={toggleMute}
+                borderRadius="0.5rem"
+                className="bg-gradient-to-r cursor-pointer from-orange-900 to-red-900 text-white font-mono border-0 hover:from-orange-700 hover:to-red-700 shadow-lg"
+                borderClassName="bg-gradient-to-r from-orange-400/20 to-red-400/20"
+                duration={4000}
+              >
+                <div className="flex items-center gap-2">
+                  {isMuted ? <IconMicrophoneOff className="h-4 w-4" /> : <IconMicrophone className="h-4 w-4" />}
+                  {isMuted ? 'unmute' : 'mute'}
+                </div>
+              </Button>
+              <Button
+                onClick={stopCall}
+                borderRadius="0.5rem"
+                className="bg-gradient-to-r cursor-pointer from-red-900 to-red-900 text-white font-mono border-0 hover:from-red-700 hover:to-red-700 shadow-lg"
+                borderClassName="bg-gradient-to-r from-red-400/20 to-red-400/20"
+                duration={4000}
+              >
+                <div className="flex items-center gap-2">
+                  <IconPhoneOff className="h-4 w-4" />
+                  end call
+                </div>
+              </Button>
             </div>
-          </Button>
+          )}
           
           <button
             onClick={() => setIsAddFormOpen(true)}
