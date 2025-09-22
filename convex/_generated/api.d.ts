@@ -22,6 +22,7 @@ import type * as seedHoldings from "../seedHoldings.js";
 import type * as seedResearch from "../seedResearch.js";
 import type * as tasks from "../tasks.js";
 import type * as users from "../users.js";
+import type * as vapiActions from "../vapiActions.js";
 import type * as wallstreetbetsActions from "../wallstreetbetsActions.js";
 import type * as weeklyDigestActions from "../weeklyDigestActions.js";
 import type * as weeklyDigestCron from "../weeklyDigestCron.js";
@@ -57,6 +58,7 @@ declare const fullApi: ApiFromModules<{
   seedResearch: typeof seedResearch;
   tasks: typeof tasks;
   users: typeof users;
+  vapiActions: typeof vapiActions;
   wallstreetbetsActions: typeof wallstreetbetsActions;
   weeklyDigestActions: typeof weeklyDigestActions;
   weeklyDigestCron: typeof weeklyDigestCron;

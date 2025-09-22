@@ -18,15 +18,17 @@ This is a [Next.js](https://nextjs.org) project with AI-powered portfolio manage
 
 ### Environment Setup
 
-Create a `.env.local` file in the root directory with the following variables:
-
+1. **Frontend Environment Variables** - Create a `.env.local` file in the root directory:
 ```bash
-# Vapi Configuration
-NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_vapi_public_key_here
-
-# Add your Vapi public key here
-# You can get this from your Vapi dashboard
+# Convex Configuration (already set up)
+CONVEX_DEPLOYMENT=dev:fastidious-gnu-222
+NEXT_PUBLIC_CONVEX_URL=https://fastidious-gnu-222.convex.cloud
 ```
+
+2. **Convex Environment Variables** - Set up your Vapi private key in Convex:
+   - Go to [Convex Dashboard](https://dashboard.convex.dev/d/fastidious-gnu-222)
+   - Navigate to Settings > Environment Variables
+   - Add `VAPI_API_KEY` with your Vapi private key from [vapi.ai](https://vapi.ai)
 
 ### Installation
 
@@ -57,11 +59,11 @@ bun dev
 To use the voice assistant feature:
 
 1. Sign up for a Vapi account at [vapi.ai](https://vapi.ai)
-2. Get your public key from the Vapi dashboard
-3. Add it to your `.env.local` file as `NEXT_PUBLIC_VAPI_PUBLIC_KEY`
+2. Get your **private API key** from the Vapi dashboard
+3. Add it to your Convex environment variables as `VAPI_API_KEY` (see Environment Setup above)
 4. Click the "myquant update" button in the portfolio view to start a voice call
 
-The assistant will provide personalized market updates based on your current holdings.
+The assistant will provide personalized market updates based on your current holdings. The call is handled securely through your Convex backend, keeping your private API key safe.
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 

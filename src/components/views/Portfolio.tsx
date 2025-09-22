@@ -23,7 +23,6 @@ export default function Portfolio() {
   const [dailyChanges, setDailyChanges] = useState<{ [key: string]: { change: number; changePercent: number } }>({});
 
   // Vapi call functionality
-  const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '';
   const {
     isCallActive,
     isMuted,
@@ -34,7 +33,6 @@ export default function Portfolio() {
     toggleMute,
   } = useVapiCall({
     holdings: holdings || [],
-    publicKey: vapiPublicKey,
   });
 
   const fetchDailyChanges = useCallback(async () => {
@@ -187,7 +185,7 @@ export default function Portfolio() {
           {!isCallActive ? (
             <Button
               onClick={startCall}
-              disabled={isConnecting || !vapiPublicKey}
+              disabled={isConnecting}
               borderRadius="0.5rem"
               className="bg-gradient-to-r cursor-pointer from-purple-900 to-pink-900 text-white font-mono border-0 hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25 disabled:opacity-50 disabled:cursor-not-allowed"
               borderClassName="bg-gradient-to-r from-purple-400/20 to-pink-400/20"
