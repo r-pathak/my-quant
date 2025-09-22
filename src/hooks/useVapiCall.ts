@@ -120,7 +120,7 @@ Mention their specific holdings and ask if they want you to research any of thes
 
     try {
       // Start call with existing assistant ID
-      await vapi.start('9f2a635d-b4ac-4a47-bedf-e43050d37cf4');
+      await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '');
       
       // Immediately inject system message with portfolio context
       setTimeout(() => {
