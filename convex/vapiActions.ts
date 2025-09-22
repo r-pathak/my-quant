@@ -78,6 +78,7 @@ IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The t
       },
       body: JSON.stringify({
         assistant: assistantConfig,
+        phoneNumberId: "0b793bf6-70f5-4856-bab9-0b8e00f804b4",
       }),
     });
 
