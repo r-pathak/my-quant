@@ -22,7 +22,6 @@ interface CallState {
   isMuted: boolean;
   isConnecting: boolean;
   error: string | null;
-  callId: string | null;
 }
 
 export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
@@ -32,14 +31,18 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
     isMuted: false,
     isConnecting: false,
     error: null,
-    callId: null,
   });
 
-  // Initialize Vapi instance with proxy URL
+  // Initialize Vapi instance with public key
   useEffect(() => {
-    // Use a proper token for proxy authentication
-    // The proxy will handle the actual Vapi API calls with the private key
-    const vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '', process.env.NEXT_PUBLIC_CONVEX_URL || '');
+    const vapiPublicKey = process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY;
+    
+    if (!vapiPublicKey) {
+      console.error('NEXT_PUBLIC_VAPI_PUBLIC_KEY is not set');
+      return;
+    }
+
+    const vapiInstance = new Vapi(vapiPublicKey);
     setVapi(vapiInstance);
 
     // Set up event listeners
@@ -101,43 +104,37 @@ just summarise the info from the article and explain how it might affect price.
 IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The total portfolio value is approximately $${portfolioValue.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}. Focus your analysis on these holdings and provide insights that are most relevant to their current positions. Start by giving them a quick overview of what's happening with their portfolio today.`;
   }, [holdings]);
 
-  // Start a call
+  // Start a call with existing assistant ID
   const startCall = useCallback(async () => {
     if (!vapi || callState.isCallActive || callState.isConnecting) return;
 
     setCallState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
-      // For now, start with a basic call and we'll handle the holdings data in the proxy
-      // The proxy will generate the system message based on the user's portfolio
-      await vapi.start({
-        // Basic assistant config that our proxy will enhance
-        model: {
-          provider: "openai",
-          model: "gpt-4o",
-          toolIds: [
-            "b32ff3ef-5b78-4f91-8337-e3b44a49849e"
-          ],
-          messages: [
-            {
-              role: "system",
-              content: "You are a finance expert. Please provide portfolio insights.",
+      // Start call with existing assistant ID
+      await vapi.start('9f2a635d-b4ac-4a47-bedf-e43050d37cf4');
+      
+      // Immediately inject system message with portfolio context
+      setTimeout(() => {
+        if (vapi && callState.isCallActive) {
+          vapi.send({
+            type: 'add-message',
+            message: {
+              role: 'system',
+              content: generateSystemMessage(),
             },
-          ],
-        },
-        voice: {
-          provider: "minimax",
-          voiceId: "moss_audio_82ebf67c-78c8-11f0-8e8e-36b92fbb4f95",
-        },
-      });
+          });
+        }
+      }, 1000); // Wait 1 second for call to establish
+      
     } catch (error) {
-      setCallState(prev => ({
-        ...prev,
+      setCallState(prev => ({ 
+        ...prev, 
         error: error instanceof Error ? error.message : 'Failed to start call',
-        isConnecting: false
+        isConnecting: false 
       }));
     }
-  }, [vapi, callState.isCallActive, callState.isConnecting, holdings]);
+  }, [vapi, callState.isCallActive, callState.isConnecting, generateSystemMessage]);
 
   // Stop a call
   const stopCall = useCallback(() => {

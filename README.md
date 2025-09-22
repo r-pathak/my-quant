@@ -21,14 +21,12 @@ This is a [Next.js](https://nextjs.org) project with AI-powered portfolio manage
 1. **Frontend Environment Variables** - Create a `.env.local` file in the root directory:
 ```bash
 # Convex Configuration (already set up)
-CONVEX_DEPLOYMENT=dev:fastidious-gnu-222
-NEXT_PUBLIC_CONVEX_URL=https://fastidious-gnu-222.convex.cloud
-```
+CONVEX_DEPLOYMENT=your_convex_deployment
+NEXT_PUBLIC_CONVEX_URL=your_convex_url
 
-2. **Convex Environment Variables** - Set up your Vapi private key in Convex:
-   - Go to [Convex Dashboard](https://dashboard.convex.dev/d/fastidious-gnu-222)
-   - Navigate to Settings > Environment Variables
-   - Add `VAPI_API_KEY` with your Vapi private key from [vapi.ai](https://vapi.ai)
+# Vapi Configuration
+NEXT_PUBLIC_VAPI_PUBLIC_KEY=your_vapi_public_key_here
+```
 
 ### Installation
 
@@ -59,22 +57,17 @@ bun dev
 To use the **in-browser voice assistant** feature:
 
 1. Sign up for a Vapi account at [vapi.ai](https://vapi.ai)
-2. Get your **private API key** from the Vapi dashboard
-3. Add it to your Convex environment variables as `VAPI_API_KEY` (see Environment Setup above)
+2. Get your **public API key** from the Vapi dashboard
+3. Add it to your `.env.local` file as `NEXT_PUBLIC_VAPI_PUBLIC_KEY` (see Environment Setup above)
 4. Click the "myquant update" button in the portfolio view to start an **in-browser voice call**
 
 **What happens:**
-- Voice call starts directly in your browser (no phone calls)
-- Assistant provides personalized market updates based on your current holdings
+- Voice call starts directly in your browser using Vapi Web SDK
+- Uses existing assistant ID: `9f2a635d-b4ac-4a47-bedf-e43050d37cf4`
+- System message is dynamically injected with your portfolio context
 - You can mute/unmute and end the call using the on-screen controls
-- All calls are handled securely through your Convex backend proxy
 
 **Note:** This creates in-browser voice calls, not outbound phone calls. The assistant will speak through your computer's speakers and listen through your microphone.
-
-**Architecture:** The app uses a secure proxy server pattern where:
-- Frontend sends custom data (userId, assistantType, holdings) to Convex proxy
-- Convex proxy uses your private Vapi API key to create calls
-- All sensitive data and API keys stay on the server side
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
