@@ -47,27 +47,48 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
 
     // Set up event listeners
     vapiInstance.on('call-start', () => {
+      console.log('🎉 Call started event triggered');
       setCallState(prev => ({ ...prev, isCallActive: true, isConnecting: false, error: null }));
+      
+      // Inject system message immediately when call starts
+      console.log('📤 Attempting immediate message injection on call-start...');
+      const systemMessage = generateSystemMessage();
+      console.log('📝 System message for injection:', systemMessage);
+      
+      try {
+        vapiInstance.send({
+          type: 'add-message',
+          message: {
+            role: 'system',
+            content: systemMessage,
+          },
+        });
+        console.log('✅ System message sent via call-start event');
+      } catch (injectionError) {
+        console.error('❌ Failed to inject system message via call-start:', injectionError);
+      }
     });
 
     vapiInstance.on('call-end', () => {
+      console.log('🔚 Call ended event triggered');
       setCallState(prev => ({ ...prev, isCallActive: false, isConnecting: false, error: null }));
     });
 
     vapiInstance.on('error', (error) => {
+      console.error('💥 Vapi error event:', error);
       setCallState(prev => ({ ...prev, error: error.message || 'An error occurred', isConnecting: false }));
     });
 
     vapiInstance.on('speech-start', () => {
-      console.log('Assistant is speaking');
+      console.log('🗣️ Assistant is speaking');
     });
 
     vapiInstance.on('speech-end', () => {
-      console.log('Assistant finished speaking');
+      console.log('🔇 Assistant finished speaking');
     });
 
     vapiInstance.on('message', (message) => {
-      console.log('Message received:', message);
+      console.log('📨 Message received:', message);
     });
 
     return () => {
@@ -119,23 +140,45 @@ Mention their specific holdings and ask if they want you to research any of thes
     setCallState(prev => ({ ...prev, isConnecting: true, error: null }));
 
     try {
+      console.log('🚀 Starting Vapi call...');
+      const assistantId = process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '';
+      console.log('📞 Assistant ID:', assistantId);
+      
       // Start call with existing assistant ID
-      await vapi.start(process.env.NEXT_PUBLIC_VAPI_ASSISTANT_ID || '');
+      await vapi.start(assistantId);
+      console.log('✅ Call started successfully');
+      
+      // Generate the system message
+      const systemMessage = generateSystemMessage();
+      console.log('📝 Generated system message:', systemMessage);
       
       // Immediately inject system message with portfolio context
       setTimeout(() => {
+        console.log('⏰ Timeout triggered - attempting message injection...');
+        console.log('🔍 Vapi instance exists:', !!vapi);
+        console.log('🔍 Call is active:', callState.isCallActive);
+        
         if (vapi && callState.isCallActive) {
-          vapi.send({
-            type: 'add-message',
-            message: {
-              role: 'system',
-              content: generateSystemMessage(),
-            },
-          });
+          console.log('📤 Sending system message injection...');
+          try {
+            vapi.send({
+              type: 'add-message',
+              message: {
+                role: 'system',
+                content: systemMessage,
+              },
+            });
+            console.log('✅ System message sent successfully');
+          } catch (injectionError) {
+            console.error('❌ Failed to inject system message:', injectionError);
+          }
+        } else {
+          console.warn('⚠️ Cannot inject message - vapi or call not ready');
         }
       }, 1000); // Wait 1 second for call to establish
       
     } catch (error) {
+      console.error('❌ Failed to start call:', error);
       setCallState(prev => ({ 
         ...prev, 
         error: error instanceof Error ? error.message : 'Failed to start call',
@@ -163,13 +206,21 @@ Mention their specific holdings and ask if they want you to research any of thes
   // Send a message
   const sendMessage = useCallback((message: string) => {
     if (vapi && callState.isCallActive) {
-      vapi.send({
-        type: 'add-message',
-        message: {
-          role: 'user',
-          content: message,
-        },
-      });
+      console.log('📤 Sending user message:', message);
+      try {
+        vapi.send({
+          type: 'add-message',
+          message: {
+            role: 'user',
+            content: message,
+          },
+        });
+        console.log('✅ User message sent successfully');
+      } catch (error) {
+        console.error('❌ Failed to send user message:', error);
+      }
+    } else {
+      console.warn('⚠️ Cannot send message - vapi or call not ready');
     }
   }, [vapi, callState.isCallActive]);
 
