@@ -37,8 +37,9 @@ export const useVapiCall = ({ holdings }: UseVapiCallProps) => {
 
   // Initialize Vapi instance with proxy URL
   useEffect(() => {
-    // Use a dummy public key since we're routing through our proxy
-    const vapiInstance = new Vapi('dummy-key', 'https://fastidious-gnu-222.convex.cloud');
+    // Use a proper token for proxy authentication
+    // The proxy will handle the actual Vapi API calls with the private key
+    const vapiInstance = new Vapi(process.env.NEXT_PUBLIC_VAPI_PUBLIC_KEY || '', process.env.NEXT_PUBLIC_CONVEX_URL || '');
     setVapi(vapiInstance);
 
     // Set up event listeners
@@ -114,6 +115,9 @@ IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The t
         model: {
           provider: "openai",
           model: "gpt-4o",
+          toolIds: [
+            "b32ff3ef-5b78-4f91-8337-e3b44a49849e"
+          ],
           messages: [
             {
               role: "system",
@@ -127,10 +131,10 @@ IMPORTANT: The user's current portfolio contains these stocks: ${tickers}. The t
         },
       });
     } catch (error) {
-      setCallState(prev => ({ 
-        ...prev, 
+      setCallState(prev => ({
+        ...prev,
         error: error instanceof Error ? error.message : 'Failed to start call',
-        isConnecting: false 
+        isConnecting: false
       }));
     }
   }, [vapi, callState.isCallActive, callState.isConnecting, holdings]);

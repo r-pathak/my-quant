@@ -71,6 +71,11 @@ To use the **in-browser voice assistant** feature:
 
 **Note:** This creates in-browser voice calls, not outbound phone calls. The assistant will speak through your computer's speakers and listen through your microphone.
 
+**Architecture:** The app uses a secure proxy server pattern where:
+- Frontend sends custom data (userId, assistantType, holdings) to Convex proxy
+- Convex proxy uses your private Vapi API key to create calls
+- All sensitive data and API keys stay on the server side
+
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
 ## Learn More
