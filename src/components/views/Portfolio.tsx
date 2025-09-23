@@ -166,6 +166,13 @@ export default function Portfolio() {
       toast.error("Failed to send email update. Please try again.");
     }
   };
+
+  // Callback to refresh data after adding a new holding
+  const handleHoldingAdded = useCallback(async () => {
+    // Fetch daily changes for all holdings (including the new one)
+    await fetchDailyChanges();
+    // The holdings and portfolioSummary will automatically update via Convex reactivity
+  }, [fetchDailyChanges]);
   return (
     <div className="flex flex-col h-full space-y-8 relative">
       {/* Header */}
@@ -564,6 +571,7 @@ export default function Portfolio() {
       <AddHoldingForm
         isOpen={isAddFormOpen}
         onClose={() => setIsAddFormOpen(false)}
+        onHoldingAdded={handleHoldingAdded}
       />
     </div>
   );

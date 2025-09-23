@@ -8,9 +8,10 @@ import { IconPlus, IconX } from "@tabler/icons-react";
 interface AddHoldingFormProps {
   isOpen: boolean;
   onClose: () => void;
+  onHoldingAdded?: () => void; // Callback to trigger refresh after adding
 }
 
-export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps) {
+export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddHoldingFormProps) {
   const [formData, setFormData] = useState({
     ticker: "",
     companyName: "",
@@ -26,6 +27,7 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
   const [isFetchingCompany, setIsFetchingCompany] = useState(false);
   const addOrUpdateHolding = useMutation(api.holdings.addOrUpdateHolding);
   const getCompanyNameByTicker = useAction(api.priceActions.getCompanyNameByTicker);
+  const updatePricesForTickers = useAction(api.priceActions.updatePricesForTickers);
 
   // Function to fetch company name using Convex action
   const fetchCompanyName = async (ticker: string) => {
@@ -67,8 +69,11 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
 
     setIsSubmitting(true);
     try {
+      const ticker = formData.ticker.toUpperCase();
+      
+      // Add the holding
       await addOrUpdateHolding({
-        ticker: formData.ticker.toUpperCase(),
+        ticker,
         companyName: formData.companyName,
         unitsHeld: parseFloat(formData.unitsHeld),
         boughtPrice: parseFloat(formData.boughtPrice),
@@ -77,6 +82,15 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
         purchaseDate: formData.purchaseDate,
         notes: formData.notes || undefined,
       });
+
+      // Immediately update prices for the new ticker to get current price and daily changes
+      try {
+        await updatePricesForTickers({ tickers: [ticker] });
+        console.log(`Updated prices for newly added ticker: ${ticker}`);
+      } catch (priceError) {
+        console.error("Error updating prices for new ticker:", priceError);
+        // Don't fail the whole operation if price update fails
+      }
 
       // Reset form
       setFormData({
@@ -89,6 +103,11 @@ export default function AddHoldingForm({ isOpen, onClose }: AddHoldingFormProps)
         purchaseDate: "",
         notes: "",
       });
+
+      // Trigger callback to refresh portfolio data
+      if (onHoldingAdded) {
+        onHoldingAdded();
+      }
 
       onClose();
     } catch (error) {
