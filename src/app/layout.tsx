@@ -40,11 +40,11 @@ export default function RootLayout({
       href: "/research",
       icon: <IconMicroscope className="h-7 w-7" />,
     },
-    {
-      title: "settings",
-      href: "/settings",
-      icon: <IconSettings className="h-7 w-7" />,
-    },
+    // {
+    //   title: "settings",
+    //   href: "/settings",
+    //   icon: <IconSettings className="h-7 w-7" />,
+    // },
   ];
 
   return (
