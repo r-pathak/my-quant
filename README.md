@@ -61,7 +61,7 @@ A comprehensive, modern portfolio management platform built with Next.js, Convex
 
 ### **AI & Integrations**
 - **Vapi** - Voice AI assistant
-- **OpenAI GPT-4** - AI-powered research and analysis
+- **OpenAI GPT-4o** - AI-powered research and analysis
 - **Firecrawl** - Web scraping for market data
 - **Real-time APIs** - Stock price and market data
 
@@ -209,7 +209,7 @@ External APIs (Stock prices, AI services)
 ### Vercel Deployment
 1. **Connect your repository** to Vercel
 2. **Set environment variables** in Vercel dashboard
-3. **Deploy** - Automatic deployments on push to main
+3. **Deploy** - Override the deployment command with: npx convex deploy --cmd 'npm run build'. Set the environment variable 'CONVEX_DEPLOY_KEY' in Vercel from the Convex dashboard
 
 ### Convex Deployment
 1. **Run** `npx convex deploy`
