@@ -287,7 +287,7 @@ Price Change: ${priceChangePercent.toFixed(2)}%
 Recent News (last 7 days):
 ${newsContext || 'No recent news available'}
 
-Provide a concise analysis (max 150 words) and a clear recommendation (BUY, SELL, or HOLD).
+Provide a concise analysis (max 150 words) and a clear recommendation (BUY, SELL, or HOLD). Don't overreact to the news, provide a balanced perspective - and consider the long term. The investor should not be expected to make knee-jerk decisions to the news.
 Focus on:
 1. Key factors affecting the stock
 2. Technical and fundamental outlook
@@ -304,7 +304,7 @@ ANALYSIS: [Your analysis here]
         messages: [
           {
             role: "system",
-            content: "You are a professional financial analyst providing concise, actionable trading recommendations. Be objective and consider both risks and opportunities."
+            content: "You are a professional financial expert, with a deep understanding of the stock market and the ability to provide concise, actionable trading recommendations from a balanced perspective. Be objective and consider both risks and opportunities."
           },
           {
             role: "user",
