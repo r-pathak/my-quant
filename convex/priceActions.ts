@@ -154,13 +154,33 @@ export const getDailyPriceChanges = action({
   },
 });
 
-// Action to fetch company name by ticker
-export const getCompanyNameByTicker = action({
+// Action to validate ticker and fetch company name
+export const validateTicker = action({
   args: { ticker: v.string() },
-  handler: async (ctx, args): Promise<{ companyName: string | null; error?: string }> => {
+  handler: async (ctx, args): Promise<{ isValid: boolean; companyName: string | null; error?: string }> => {
     try {
-      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${args.ticker.toUpperCase()}`;
-      console.log(`Fetching company data for ${args.ticker} from: ${url}`);
+      const ticker = args.ticker.toUpperCase().trim();
+      
+      // Basic format validation
+      if (!ticker || ticker.length < 1 || ticker.length > 10) {
+        return { 
+          isValid: false, 
+          companyName: null, 
+          error: 'Ticker must be between 1 and 10 characters' 
+        };
+      }
+      
+      // Check if ticker contains only valid characters (letters, numbers, and dots)
+      if (!/^[A-Z0-9.-]+$/.test(ticker)) {
+        return { 
+          isValid: false, 
+          companyName: null, 
+          error: 'Ticker can only contain letters, numbers, and dots' 
+        };
+      }
+
+      const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}`;
+      console.log(`Validating ticker ${ticker} from: ${url}`);
       
       const response = await fetch(url, {
         method: 'GET',
@@ -171,24 +191,64 @@ export const getCompanyNameByTicker = action({
       });
       
       if (!response.ok) {
-        console.error(`HTTP error for ${args.ticker}! status: ${response.status}`);
-        return { companyName: null, error: `HTTP ${response.status}` };
+        console.error(`HTTP error for ${ticker}! status: ${response.status}`);
+        return { 
+          isValid: false, 
+          companyName: null, 
+          error: response.status === 404 ? 'Ticker not found' : `HTTP ${response.status}` 
+        };
       }
       
       const data = await response.json();
-      console.log(`Yahoo Finance API response for ${args.ticker}:`, JSON.stringify(data, null, 2));
+      console.log(`Yahoo Finance API response for ${ticker}:`, JSON.stringify(data, null, 2));
       
-      if (data.chart?.result?.[0]?.meta?.longName) {
-        const companyName = data.chart.result[0].meta.longName;
-        console.log(`✅ Found company name for ${args.ticker}: ${companyName}`);
-        return { companyName };
+      // Check if we have valid chart data
+      if (data.chart?.result?.[0]?.meta) {
+        const meta = data.chart.result[0].meta;
+        const companyName = meta.longName || meta.shortName || ticker;
+        
+        // Additional validation: check if we have valid price data
+        if (meta.regularMarketPrice || meta.previousClose) {
+          console.log(`✅ Ticker ${ticker} is valid: ${companyName}`);
+          return { 
+            isValid: true, 
+            companyName 
+          };
+        } else {
+          console.log(`No price data found for ${ticker}`);
+          return { 
+            isValid: false, 
+            companyName: null, 
+            error: 'No price data available for this ticker' 
+          };
+        }
       } else {
-        console.log(`No company name found for ${args.ticker}`);
-        return { companyName: null, error: 'No company name found' };
+        console.log(`Invalid ticker ${ticker} - no chart data`);
+        return { 
+          isValid: false, 
+          companyName: null, 
+          error: 'Ticker not found or invalid' 
+        };
       }
     } catch (error) {
-      console.error(`Error fetching company data for ${args.ticker}:`, error);
-      return { companyName: null, error: error instanceof Error ? error.message : 'Unknown error' };
+      console.error(`Error validating ticker ${args.ticker}:`, error);
+      return { 
+        isValid: false, 
+        companyName: null, 
+        error: error instanceof Error ? error.message : 'Unknown error occurred' 
+      };
     }
+  },
+});
+
+// Action to fetch company name by ticker (kept for backward compatibility)
+export const getCompanyNameByTicker = action({
+  args: { ticker: v.string() },
+  handler: async (ctx, args): Promise<{ companyName: string | null; error?: string }> => {
+    const result = await ctx.runAction(api.priceActions.validateTicker, { ticker: args.ticker });
+    return {
+      companyName: result.companyName,
+      error: result.error
+    };
   },
 });

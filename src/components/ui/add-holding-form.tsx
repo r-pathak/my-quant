@@ -25,47 +25,103 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
 
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isFetchingCompany, setIsFetchingCompany] = useState(false);
+  const [validationErrors, setValidationErrors] = useState<{[key: string]: string}>({});
+  const [tickerValidated, setTickerValidated] = useState(false);
   const addOrUpdateHolding = useMutation(api.holdings.addOrUpdateHolding);
-  const getCompanyNameByTicker = useAction(api.priceActions.getCompanyNameByTicker);
+  const validateTicker = useAction(api.priceActions.validateTicker);
   const updatePricesForTickers = useAction(api.priceActions.updatePricesForTickers);
 
-  // Function to fetch company name using Convex action
-  const fetchCompanyName = async (ticker: string) => {
-    if (!ticker || ticker.length < 3) return;
+  // Function to validate ticker and fetch company name
+  const validateAndFetchTicker = async (ticker: string) => {
+    if (!ticker || ticker.length < 1) {
+      setTickerValidated(false);
+      setValidationErrors(prev => ({ ...prev, ticker: '' }));
+      return;
+    }
     
     setIsFetchingCompany(true);
+    setValidationErrors(prev => ({ ...prev, ticker: '' }));
+    
     try {
-      const result = await getCompanyNameByTicker({ ticker: ticker.toUpperCase() });
+      const result = await validateTicker({ ticker: ticker.toUpperCase() });
       
-      if (result.companyName) {
+      if (result.isValid && result.companyName) {
         setFormData(prev => ({
           ...prev,
           companyName: result.companyName!
         }));
+        setTickerValidated(true);
+        setValidationErrors(prev => ({ ...prev, ticker: '' }));
       } else {
-        // If no company name found, clear it
         setFormData(prev => ({
           ...prev,
           companyName: ""
         }));
-        if (result.error) {
-          console.warn(`Failed to fetch company data for ${ticker}: ${result.error}`);
-        }
+        setTickerValidated(false);
+        setValidationErrors(prev => ({ 
+          ...prev, 
+          ticker: result.error || 'Invalid ticker symbol' 
+        }));
       }
     } catch (error) {
-      console.error('Error fetching company name:', error);
+      console.error('Error validating ticker:', error);
       setFormData(prev => ({
         ...prev,
         companyName: ""
+      }));
+      setTickerValidated(false);
+      setValidationErrors(prev => ({ 
+        ...prev, 
+        ticker: 'Failed to validate ticker. Please try again.' 
       }));
     } finally {
       setIsFetchingCompany(false);
     }
   };
 
+  // Validation function
+  const validateForm = () => {
+    const errors: {[key: string]: string} = {};
+
+    // Ticker validation
+    if (!formData.ticker.trim()) {
+      errors.ticker = 'Ticker is required';
+    } else if (!tickerValidated) {
+      errors.ticker = 'Please enter a valid ticker and wait for validation';
+    }
+
+    // Bought price validation
+    if (!formData.boughtPrice.trim()) {
+      errors.boughtPrice = 'Bought price is required';
+    } else {
+      const price = parseFloat(formData.boughtPrice);
+      if (isNaN(price) || price <= 0) {
+        errors.boughtPrice = 'Bought price must be a positive number';
+      }
+    }
+
+    // Units held validation
+    if (!formData.unitsHeld.trim()) {
+      errors.unitsHeld = 'Units held is required';
+    } else {
+      const units = parseFloat(formData.unitsHeld);
+      if (isNaN(units) || units <= 0) {
+        errors.unitsHeld = 'Units held must be a positive number';
+      }
+    }
+
+    setValidationErrors(errors);
+    return Object.keys(errors).length === 0;
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (isSubmitting) return;
+
+    // Validate form before submission
+    if (!validateForm()) {
+      return;
+    }
 
     setIsSubmitting(true);
     try {
@@ -103,6 +159,8 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
         purchaseDate: "",
         notes: "",
       });
+      setValidationErrors({});
+      setTickerValidated(false);
 
       // Trigger callback to refresh portfolio data
       if (onHoldingAdded) {
@@ -112,6 +170,7 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
       onClose();
     } catch (error) {
       console.error("Error adding holding:", error);
+      alert('Failed to add holding. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -124,15 +183,34 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
       [name]: value
     }));
 
-    // Auto-fetch company name when ticker changes (only if 3+ characters)
-    if (name === 'ticker' && value.length >= 3) {
-      fetchCompanyName(value);
-    } else if (name === 'ticker' && value.length < 3) {
-      // Clear company name if ticker is too short
-      setFormData(prev => ({
+    // Clear validation errors for the field being changed
+    if (validationErrors[name]) {
+      setValidationErrors(prev => ({
         ...prev,
-        companyName: ""
+        [name]: ''
       }));
+    }
+
+    // Auto-validate ticker when it changes (debounced for better UX)
+    if (name === 'ticker') {
+      setTickerValidated(false);
+      if (value.length >= 1) {
+        // Use setTimeout to debounce the validation
+        const timeoutId = setTimeout(() => {
+          validateAndFetchTicker(value);
+        }, 500);
+        return () => clearTimeout(timeoutId);
+      } else {
+        // Clear company name if ticker is empty
+        setFormData(prev => ({
+          ...prev,
+          companyName: ""
+        }));
+        setValidationErrors(prev => ({
+          ...prev,
+          ticker: ''
+        }));
+      }
     }
   };
 
@@ -156,7 +234,8 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
             <div className="grid grid-cols-2 gap-4">
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
-                  Ticker *
+                  Ticker * {isFetchingCompany && <span className="text-yellow-400">(validating...)</span>}
+                  {tickerValidated && <span className="text-green-400">✓</span>}
                 </label>
                 <input
                   type="text"
@@ -164,10 +243,19 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
                   value={formData.ticker}
                   onChange={handleChange}
                   required
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50 uppercase"
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 uppercase ${
+                    validationErrors.ticker 
+                      ? 'border-red-500 focus:ring-red-500/50' 
+                      : tickerValidated 
+                        ? 'border-green-500 focus:ring-green-500/50'
+                        : 'border-white/20 focus:ring-primary/50'
+                  }`}
                   placeholder="aapl"
                   maxLength={10}
                 />
+                {validationErrors.ticker && (
+                  <p className="text-red-400 text-xs mt-1 font-mono">{validationErrors.ticker}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
@@ -212,9 +300,16 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
                   required
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 ${
+                    validationErrors.unitsHeld 
+                      ? 'border-red-500 focus:ring-red-500/50' 
+                      : 'border-white/20 focus:ring-primary/50'
+                  }`}
                   placeholder="100"
                 />
+                {validationErrors.unitsHeld && (
+                  <p className="text-red-400 text-xs mt-1 font-mono">{validationErrors.unitsHeld}</p>
+                )}
               </div>
               <div>
                 <label className="block text-sm font-medium text-foreground mb-2 font-mono">
@@ -228,9 +323,16 @@ export default function AddHoldingForm({ isOpen, onClose, onHoldingAdded }: AddH
                   required
                   min="0"
                   step="0.01"
-                  className="w-full px-3 py-2 bg-white/10 border border-white/20 rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 focus:ring-primary/50"
+                  className={`w-full px-3 py-2 bg-white/10 border rounded-lg text-foreground placeholder-muted-foreground font-mono focus:outline-none focus:ring-2 ${
+                    validationErrors.boughtPrice 
+                      ? 'border-red-500 focus:ring-red-500/50' 
+                      : 'border-white/20 focus:ring-primary/50'
+                  }`}
                   placeholder="175.43"
                 />
+                {validationErrors.boughtPrice && (
+                  <p className="text-red-400 text-xs mt-1 font-mono">{validationErrors.boughtPrice}</p>
+                )}
               </div>
             </div>
 

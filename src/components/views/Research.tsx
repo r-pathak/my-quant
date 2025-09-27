@@ -47,6 +47,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
   const [selectedTicker, setSelectedTicker] = useState<string | null>(null);
   const [newTicker, setNewTicker] = useState("");
   const [isAddingStock, setIsAddingStock] = useState(false);
+  const [tickerValidationError, setTickerValidationError] = useState("");
   const [stockData, setStockData] = useState<StockData | null>(null);
   const [isLoadingData, setIsLoadingData] = useState(false);
   const [showManageStocks, setShowManageStocks] = useState(false);
@@ -111,6 +112,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
   const getMotleyFoolData = useAction(api.firecrawlActions.getMotleyFoolData);
   const getChartData = useAction(api.chartActions.getChartData);
   const fetchWallStreetBetsData = useAction(api.wallstreetbetsActions.fetchWallStreetBetsData);
+  const validateTicker = useAction(api.priceActions.validateTicker);
   const getCachedMotleyFoolData = useQuery(api.researchActions.getCachedMotleyFoolData, 
     selectedTicker ? { ticker: selectedTicker } : "skip");
   const updateMotleyFoolData = useMutation(api.researchActions.updateMotleyFoolData);
@@ -308,22 +310,37 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
   }, [selectedTicker, activeTab, timeframe, getChartData]);
 
   const handleAddStock = async () => {
-    if (!newTicker.trim()) return;
+    if (!newTicker.trim()) {
+      setTickerValidationError("Ticker is required");
+      return;
+    }
     
     setIsAddingStock(true);
+    setTickerValidationError("");
+    
     try {
+      // First validate the ticker
+      const validationResult = await validateTicker({ ticker: newTicker.trim().toUpperCase() });
+      
+      if (!validationResult.isValid) {
+        setTickerValidationError(validationResult.error || "Invalid ticker symbol");
+        return;
+      }
+      
+      // If validation passes, add the stock
       const result = await fetchAndAddStock({ ticker: newTicker.trim().toUpperCase() });
       if (result.success) {
         setNewTicker("");
+        setTickerValidationError("");
         setShowAddStockModal(false);
         // Auto-select the newly added stock
         setSelectedTicker(newTicker.trim().toUpperCase());
       } else {
-        alert(result.message);
+        setTickerValidationError(result.message || "Failed to add stock");
       }
     } catch (error) {
       console.error("Error adding stock:", error);
-        alert("failed to add stock");
+      setTickerValidationError("Failed to add stock. Please try again.");
     } finally {
       setIsAddingStock(false);
     }
@@ -795,6 +812,14 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                             if (!selectedTicker) return;
                             setIsAddingStock(true);
                             try {
+                              // First validate the ticker
+                              const validationResult = await validateTicker({ ticker: selectedTicker });
+                              
+                              if (!validationResult.isValid) {
+                                alert(validationResult.error || "Invalid ticker symbol");
+                                return;
+                              }
+                              
                               const result = await fetchAndAddStock({ ticker: selectedTicker });
                               if (result.success) {
                                 // Stock added successfully - it will appear in the list automatically
@@ -1632,6 +1657,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                 onClick={() => {
                   setShowAddStockModal(false);
                   setNewTicker("");
+                  setTickerValidationError("");
                 }}
                 className="text-muted-foreground hover:text-foreground transition-colors"
               >
@@ -1647,13 +1673,25 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                 <input
                   type="text"
                   value={newTicker}
-                  onChange={(e) => setNewTicker(e.target.value.toUpperCase())}
+                  onChange={(e) => {
+                    setNewTicker(e.target.value.toUpperCase());
+                    if (tickerValidationError) {
+                      setTickerValidationError("");
+                    }
+                  }}
                   placeholder="enter ticker (e.g., aapl, googl, tsla)"
-                  className="w-full px-3 py-2 bg-card/40 backdrop-blur-xl border border-white/20 rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-transparent font-mono"
+                  className={`w-full px-3 py-2 bg-card/40 backdrop-blur-xl border rounded-lg text-foreground placeholder-muted-foreground focus:outline-none focus:ring-2 focus:border-transparent font-mono ${
+                    tickerValidationError 
+                      ? 'border-red-500 focus:ring-red-500/50' 
+                      : 'border-white/20 focus:ring-primary/50'
+                  }`}
                   onKeyPress={(e) => e.key === 'Enter' && handleAddStock()}
                   disabled={isAddingStock}
                   autoFocus
                 />
+                {tickerValidationError && (
+                  <p className="text-red-400 text-xs mt-1 font-mono">{tickerValidationError}</p>
+                )}
               </div>
               
               <div className="flex gap-3">
@@ -1661,6 +1699,7 @@ export function Research({ initialTicker }: { initialTicker?: string }) {
                   onClick={() => {
                     setShowAddStockModal(false);
                     setNewTicker("");
+                    setTickerValidationError("");
                   }}
                   className="flex-1 px-4 py-2 text-sm bg-card/40 hover:bg-card/60 border border-white/20 rounded-lg transition-colors font-mono"
                   disabled={isAddingStock}
